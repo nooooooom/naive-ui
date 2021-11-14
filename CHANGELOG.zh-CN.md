@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## Pending
+
+### Fixes
+
+- 修复 `n-grid` 收缩时后缀 girdItem 设置的 span 不起作用，关闭 [#1530](https://github.com/TuSimple/naive-ui/issues/1530)
+- 修复 `n-button` 使用 `circle` 属性时在特定场景异常收缩的问题，关闭 [#1557](https://github.com/TuSimple/naive-ui/issues/1557)
+- 修复 `input-props` 对于 `type` 属性无法生效的问题，关闭 [#1553](https://github.com/TuSimple/naive-ui/issues/1553)
+
+### Feats
+
+- `n-menu` 添加箭头颜色区分选中未选中，关闭 [#1535](https://github.com/TuSimple/naive-ui/issues/1535)
+- `n-menu` 的 `defaultExpandedKeys` 使用 watchEffect 初始化，关闭 [#1536](https://github.com/TuSimple/naive-ui/issues/1536)
+- `n-date-picker` 属性 `type` 支持 `year` 选项
+
+### i18n
+
+- 新增 `createLocale` 方法允许用户自定义国际化，关闭 [#1525](https://github.com/TuSimple/naive-ui/issues/1525)
+
+## 2.20.2 (2021-11-05)
+
+### Feats
+
+- `n-modal` 新增 `transform-origin` 属性，关闭 [#1498](https://github.com/TuSimple/naive-ui/issues/1498)
+- `n-tabs` 新增 `pane-class` 属性，关闭 [#1500](https://github.com/TuSimple/naive-ui/issues/1500)
+
+### Fixes
+
+- 修复 `n-alert` `contentTextColor` 和 `titleTextColor` 的类型主题变量不起作用，关闭 [#1495](https://github.com/TuSimple/naive-ui/issues/1495)
+- 修复 `n-time-picker` 当选择面板通过确认按钮关闭时不会触发 blur 事件, closes [#1499](https://github.com/TuSimple/naive-ui/issues/1499)
+- 修复 `n-upload` `UploadFileInfo` 的 `thumbnailUrl` 字段不起作用，关闭 [#1495](https://github.com/TuSimple/naive-ui/issues/1245)
+- 修复 `n-button` `keyboard` 属性不起作用，关闭 [#1508](https://github.com/TuSimple/naive-ui/issues/1508)
+- 修复 `n-upload` 实例缺少 `openOpenFileDialog` 方法
+
+### i18n
+
+- 新增 deDE locale
+- 新增 nbNO locale
+
 ## 2.20.1 (2021-11-01)
 
 ### Fixes
