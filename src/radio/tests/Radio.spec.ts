@@ -44,14 +44,10 @@ describe('n-radio', () => {
   })
 
   it('should work with `size` prop', async () => {
-    const wrapper = mount(NRadio, { props: { size: 'small' } })
-    expect(wrapper.find('.n-radio').attributes('style')).toMatchSnapshot()
-
-    await wrapper.setProps({ size: 'medium' })
-    expect(wrapper.find('.n-radio').attributes('style')).toMatchSnapshot()
-
-    await wrapper.setProps({ size: 'large' })
-    expect(wrapper.find('.n-radio').attributes('style')).toMatchSnapshot()
+    ;(['small', 'medium', 'large'] as const).forEach((size) => {
+      const wrapper = mount(NRadio, { props: { size: size } })
+      expect(wrapper.find('.n-radio').attributes('style')).toMatchSnapshot()
+    })
   })
 })
 
@@ -110,5 +106,24 @@ describe('n-radio-group', () => {
 
     expect(radio1.attributes('name')).toEqual('randomName222')
     expect(radio2.attributes('name')).toEqual('randomName222')
+  })
+
+  it('should work with `size` prop', async () => {
+    ;(['small', 'medium', 'large'] as const).forEach((size) => {
+      const wrapper = mount(NRadioGroup, {
+        props: {
+          size: size
+        },
+        slots: {
+          default: () => [
+            h(NRadio, null, { default: () => 'test-item1' }),
+            h(NRadio, null, { default: () => 'test-item2' })
+          ]
+        }
+      })
+      expect(
+        wrapper.find('.n-radio-group').attributes('style')
+      ).toMatchSnapshot()
+    })
   })
 })
