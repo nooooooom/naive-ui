@@ -6,6 +6,18 @@
 
 - Fix `n-slider` disabled tooltip at the wrong time.
 - Fix `n-slider` incorrect fill color style, closes [#1670](https://github.com/TuSimple/naive-ui/issues/1670).
+- Fix `n-log`'s `trim` prop not being independent when used.
+- Fix `n-slider` processing of step value precision.
+
+### Feats
+
+- `n-input-number` add `keyboard` prop.
+- Add `tableColorStriped` theme variable, closes [#1686](https://github.com/TuSimple/naive-ui/issues/1686).
+
+### Feats
+
+- `n-notification-provider` add `max` & `placement` prop.
+- `n-notification` add `destroyAll` method, closes [#333](https://github.com/TuSimple/naive-ui/issues/333).
 
 ## 2.21.1 (2021-11-23)
 
@@ -1685,7 +1697,7 @@ See vue3.md
 
 ### Fixes
 
-- Fix the problem that all the `console` statements are stripped in the bundle.
+- Fix the problem that all the `console` statements are striped in the bundle.
 
 ## 1.0.5 (2020-03-27)
 
