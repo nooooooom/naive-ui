@@ -80,10 +80,7 @@ const notificationProviderProps = {
   max: Number,
   placement: {
     type: String as PropType<
-    | 'top-left'
-    | 'top-right'
-    | 'bottom-left'
-    | 'bottom-right'
+    'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
     >,
     default: 'top-right'
   }
@@ -100,9 +97,16 @@ export default defineComponent({
     const { mergedClsPrefixRef } = useConfig(props)
     const notificationListRef = ref<NotificationReactive[]>([])
     const notificationRefs: Record<string, NotificationRef> = {}
+    const leavingKeySet = new Set<string>()
     function create (options: NotificationOptions): NotificationReactive {
       const key = createId()
-      const destroy = (): void => notificationRefs[key].hide()
+      const destroy = (): void => {
+        leavingKeySet.add(key)
+        // If you push n + 1 message when max is n, notificationRefs[key] maybe not be set
+        if (notificationRefs[key]) {
+          notificationRefs[key].hide()
+        }
+      }
       const notificationReactive = reactive({
         ...options,
         key,
@@ -111,8 +115,22 @@ export default defineComponent({
         deactivate: destroy
       })
       const { max } = props
-      if (max && notificationListRef.value.length >= max) {
-        notificationListRef.value.shift()
+      if (max && notificationListRef.value.length - leavingKeySet.size >= max) {
+        let someoneMountedRemoved = false
+        let index = 0
+        for (const notification of notificationListRef.value) {
+          if (!leavingKeySet.has(notification.key)) {
+            if (notificationRefs[notification.key]) {
+              notification.destroy()
+              someoneMountedRemoved = true
+            }
+            break
+          }
+          index++
+        }
+        if (!someoneMountedRemoved) {
+          notificationListRef.value.splice(index, 1)
+        }
       }
       notificationListRef.value.push(notificationReactive)
       return notificationReactive
@@ -124,6 +142,7 @@ export default defineComponent({
       }
     )
     function handleAfterLeave (key: string): void {
+      leavingKeySet.delete(key)
       notificationListRef.value.splice(
         notificationListRef.value.findIndex(
           (notification) => notification.key === key
