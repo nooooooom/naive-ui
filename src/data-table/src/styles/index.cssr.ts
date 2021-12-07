@@ -114,7 +114,7 @@ export default c([
       margin-right: 8px;
       cursor: pointer;
       font-size: 16px;
-      vertical-align: -.125em;
+      vertical-align: -0.2em;
     `),
     cB('data-table-thead', {
       transition: 'background-color .3s var(--bezier)',
@@ -329,19 +329,11 @@ export default c([
       ])
     ]),
     cM('bordered', [
-      cB('data-table-wrapper', {
-        border: '1px solid var(--merged-border-color)',
-        borderBottomLeftRadius: 'var(--border-radius)',
-        borderBottomRightRadius: 'var(--border-radius)'
-      }),
-      cB('data-table-td', [
-        cM('last-row', {
-          borderBottom: '0 solid var(--merged-border-color)'
-        })
-      ]),
-      cB('data-table-base-table-body', `
-        border-bottom-left-radius: calc(var(--border-radius) - 1px);
-        border-bottom-right-radius: calc(var(--border-radius) - 1px);
+      cB('data-table-wrapper', `
+        border: 1px solid var(--merged-border-color);
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+        overflow: hidden;
       `)
     ]),
     cB('data-table-base-table', [
