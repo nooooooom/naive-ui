@@ -1,6 +1,6 @@
 {
   "name": "naive-ui",
-  "version": "2.23.1",
+  "version": "2.23.2",
   "description": "A Vue 3 Component Library. Fairly Complete, Customizable Themes, Uses TypeScript, Not Too Slow",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -68,6 +68,7 @@
     "@babel/parser": "^7.12.11",
     "@babel/preset-env": "^7.12.10",
     "@babel/traverse": "^7.12.12",
+    "@emotion/hash": "^0.8.0",
     "@rollup/plugin-babel": "^5.3.0",
     "@types/estree": "^0.0.50",
     "@types/jest": "^27.0.1",
@@ -88,7 +89,7 @@
     "codesandbox": "^2.2.3",
     "cross-env": "^7.0.3",
     "cssnano": "^5.0.5",
-    "esbuild": "0.14.8",
+    "esbuild": "0.14.9",
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.2",
@@ -113,19 +114,18 @@
     "typescript": "^4.4.2",
     "vite": "^2.1.3",
     "vue": "^3.2.12",
-    "vue-router": "^4.0.5",
-    "@emotion/hash": "^0.8.0"
+    "vue-router": "^4.0.5"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
   },
   "dependencies": {
-    "@css-render/plugin-bem": "^0.15.6",
-    "@css-render/vue3-ssr": "^0.15.6",
+    "@css-render/plugin-bem": "^0.15.8",
+    "@css-render/vue3-ssr": "^0.15.8",
     "@types/lodash": "^4.14.170",
     "@types/lodash-es": "^4.17.4",
     "async-validator": "^4.0.1",
-    "css-render": "^0.15.6",
+    "css-render": "^0.15.8",
     "date-fns": "^2.27.0",
     "date-fns-tz": "^1.1.6",
     "evtd": "^0.2.3",
@@ -134,10 +134,10 @@
     "lodash-es": "^4.17.21",
     "seemly": "^0.3.3",
     "treemate": "^0.3.9",
-    "vdirs": "^0.1.4",
+    "vdirs": "^0.1.7",
     "vfonts": "^0.1.0",
     "vooks": "^0.2.12",
-    "vueuc": "^0.4.19-1"
+    "vueuc": "^0.4.19"
   },
   "sideEffects": false,
   "homepage": "https://www.naiveui.com",
