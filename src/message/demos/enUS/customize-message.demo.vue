@@ -18,7 +18,7 @@ import { defineComponent, h } from 'vue'
 import { NAlert, NButton, useMessage } from 'naive-ui'
 import type { MessageProviderRenderMessage } from 'naive-ui'
 
-const MessageTrigger = {
+const MessageTrigger = defineComponent({
   setup () {
     const { error } = useMessage()
     return () =>
@@ -32,11 +32,11 @@ const MessageTrigger = {
           }
         },
         {
-          default: () => 'Lipsum'
+          default: () => 'Lpsum'
         }
       )
   }
-}
+})
 
 export default defineComponent({
   components: { MessageTrigger },
