@@ -1,6 +1,6 @@
 {
   "name": "naive-ui",
-  "version": "2.23.2",
+  "version": "2.24.1",
   "description": "A Vue 3 Component Library. Fairly Complete, Customizable Themes, Uses TypeScript, Not Too Slow",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -25,12 +25,11 @@
     "test:cov": "cross-env NODE_ENV=test NODE_OPTIONS=--unhandled-rejections=warn jest",
     "test:watch": "cross-env NODE_ENV=test jest ---watch --verbose --coverage",
     "gen-version": "node scripts/gen-version",
-    "gen-component-declaration": "esno  scripts/gen-component-declaration",
+    "gen-component-declaration": "esno scripts/gen-component-declaration",
     "release-changelog": "node scripts/release-changelog",
     "build:site:ts": "./scripts/pre-build-site/pre-build-site.sh && cross-env TUSIMPLE=true NODE_ENV=production NODE_OPTIONS=--max-old-space-size=4096 vite build && ./scripts/post-build-site/post-build-site.sh",
     "prepare": "husky install",
     "translate": "node scripts/md-to-vue element",
-    "preinstall": "pnpm run gen-component-declaration",
     "typecheck": "vue-tsc --noEmit src/**/*.vue"
   },
   "author": "07akioni",
@@ -94,7 +93,7 @@
     "codesandbox": "^2.2.3",
     "cross-env": "^7.0.3",
     "cssnano": "^5.0.5",
-    "esbuild": "0.14.10",
+    "esbuild": "0.14.11",
     "eslint": "^8.6.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.2",
@@ -145,7 +144,7 @@
     "vdirs": "^0.1.7",
     "vfonts": "^0.0.3",
     "vooks": "^0.2.12",
-    "vueuc": "^0.4.19"
+    "vueuc": "^0.4.21"
   },
   "sideEffects": false,
   "homepage": "https://www.naiveui.com",
