@@ -1,18 +1,57 @@
 # CHANGELOG
 
-## 2.24.4
+## Pending
+
+### Feats
+
+- `n-tabs` props `justify-content` add types `start` `center` `end`
+
+## 2.24.7 (2022-01-28)
+
+### Fixes
+
+- `n-popselect` doesn't work with `width="trigger"`.
+
+### i18n
+
+- Update jaJP locale.
+
+## 2.24.6 (2022-01-26)
+
+### Feats
+
+- `n-icon` add `component` prop.
+
+### Fixes
+
+- Fix `n-dynamic-input` can add item when max is 0, closes [#2271](https://github.com/TuSimple/naive-ui/issues/2271).
+- Fix `n-dialog` useless `console.log`.
+
+## 2.24.5 (2022-01-25)
+
+### Fixes
+
+- `n-input` placeholder has no line-wrap in `textarea` type.
+- `date-picker` lacks space between panel year & month.
+
+### Feats
+
+- `n-color-picker` adds `disabled` prop.
+- `n-date-picker` adds trigger area for year & month quick jump.
+
+## 2.24.4 (2022-01-24)
 
 ### Fixes
 
 - Update vueuc version.
 
-## 2.24.3
+## 2.24.3 (2022-01-24)
 
 ### Fixes
 
 - Fix `n-layout-sider` has no border transition.
 
-## 2.24.2
+## 2.24.2 (2022-01-24)
 
 ### Fixes
 
