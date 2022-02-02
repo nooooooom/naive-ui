@@ -167,7 +167,7 @@ export default defineComponent({
       useConfig(props)
     const themeRef = useTheme(
       'Cascader',
-      'Cascader',
+      '-cascader',
       style,
       cascaderLight,
       props,
@@ -910,7 +910,7 @@ export default defineComponent({
                 ref="cascaderMenuFollowerRef"
                 show={this.mergedShow && !this.showSelectMenu}
                 containerClass={this.namespace}
-                placement="bottom-start"
+                placement={this.placement}
                 width={!this.options.length ? 'target' : undefined}
                 teleportDisabled={this.adjustedTo === useAdjustedTo.tdkey}
                 to={this.adjustedTo}
@@ -940,7 +940,7 @@ export default defineComponent({
                 show={this.mergedShow && this.showSelectMenu}
                 containerClass={this.namespace}
                 width="target"
-                placement="bottom-start"
+                placement={this.placement}
                 to={this.adjustedTo}
                 teleportDisabled={this.adjustedTo === useAdjustedTo.tdkey}
               >

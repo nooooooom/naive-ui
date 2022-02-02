@@ -234,4 +234,7 @@ export interface ConfigProviderInjection {
   mergedThemeRef: Ref<GlobalTheme | undefined>
   mergedThemeOverridesRef: Ref<GlobalThemeOverrides | undefined>
   mergedRtlRef: Ref<RtlEnabledState | undefined>
+  mergedThemeHashRef: Ref<string>
+  // non-reactive
+  disableInlineTheme: boolean
 }

@@ -11,7 +11,13 @@ import {
   CSSProperties
 } from 'vue'
 import { createTreeMate, TreeNode } from 'treemate'
-import { VBinder, VFollower, VTarget, FollowerInst } from 'vueuc'
+import {
+  VBinder,
+  VFollower,
+  VTarget,
+  FollowerInst,
+  FollowerPlacement
+} from 'vueuc'
 import { useIsMounted, useMergedState } from 'vooks'
 import { RenderLabel } from '../../_internal/select-menu/src/interface'
 import type { Size as InputSize } from '../../input/src/interface'
@@ -78,6 +84,10 @@ const mentionProps = {
     type: String,
     default: ''
   },
+  placement: {
+    type: String as PropType<FollowerPlacement>,
+    default: 'bottom-start'
+  },
   size: String as PropType<InputSize>,
   'onUpdate:value': [Array, Function] as PropType<
   MaybeArray<(value: string) => void>
@@ -106,7 +116,7 @@ export default defineComponent({
       useConfig(props)
     const themeRef = useTheme(
       'Mention',
-      'Mention',
+      '-mention',
       style,
       mentionLight,
       props,
@@ -427,7 +437,7 @@ export default defineComponent({
               </VTarget>,
               <VFollower
                 ref="followerRef"
-                placement="bottom-start"
+                placement={this.placement}
                 show={this.showMenu}
                 containerClass={this.namespace}
                 to={this.adjustedTo}
