@@ -407,6 +407,8 @@ export default defineComponent({
         class: [
           className,
           `${mergedClsPrefix}-dropdown`,
+          this.trigger === 'manual' &&
+            `${mergedClsPrefix}-popover--manual-trigger`,
           this.showArrow && `${mergedClsPrefix}-popover--show-arrow`
         ],
         clsPrefix: mergedClsPrefix,
@@ -433,8 +435,7 @@ export default defineComponent({
     return (
       <NPopover {...keep(this.$props, popoverPropKeys)} {...popoverProps}>
         {{
-          trigger: this.$slots.default,
-          _: 1
+          trigger: () => this.$slots.default?.()
         }}
       </NPopover>
     )

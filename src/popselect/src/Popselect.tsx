@@ -84,7 +84,10 @@ export default defineComponent({
             onMouseenter={onMouseenter}
             onMouseleave={onMouseleave}
           >
-            {{ default: () => this.$slots.default?.() }}
+            {{
+              action: () => this.$slots.action?.(),
+              empty: () => this.$slots.empty?.()
+            }}
           </NPopselectPanel>
         )
       }
