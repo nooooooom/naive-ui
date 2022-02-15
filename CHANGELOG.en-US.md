@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## NEXT_VERSION
+
+### Fixes
+
+- Fix `n-switch` can't use keyboard operation when checked value is customized.
+- Fix `n-data-table`'s fixed column is covered by scroll content when placed inside popover.
+- Fix `n-data-table` cannot click selection checkbox if the selection column is a column's child.
+
+### Feats
+
+- `n-tree-select` add `clear-filter-after-select` prop.
+- `n-cascader` add `clear-filter-after-select` prop.
+- `n-switch` add `icon` slot.
+- `n-switch` add `checked-icon` slot.
+- `n-switch` add `unchecked-icon` slot.
+- `n-tabs` uses `n` as CSS vars prefix.
+- `n-watermark` add new component, closes [#1745](https://github.com/TuSimple/naive-ui/issues/1745).
+
 ## 2.25.2
 
 ### Fixes
@@ -7,7 +25,7 @@
 - Remove useless `console.log` in `resolveSlot`.
 - Fix `n-tag` misses background color when `checkable=true`.
 - Fix `n-tree` throws `Image` error in `happydom` testing environment.
-- fix `n-select` `max-tag-count` tag size doesn't follow select size.
+- Fix `n-select` `max-tag-count` tag size doesn't follow select size.
 
 ### Feats
 
