@@ -20,6 +20,10 @@
 - `n-tabs` uses `n` as CSS vars prefix.
 - `n-watermark` add new component, closes [#1745](https://github.com/TuSimple/naive-ui/issues/1745).
 
+### i18n
+
+- Add skSK locale.
+
 ## 2.25.2
 
 ### Fixes
