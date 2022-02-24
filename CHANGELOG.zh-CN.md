@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## NEXT_VERSION
+## 2.25.5 (2022-02-24)
+
+### Fixes
+
+- 修复 `n-col` 在 `span=6` 时不能正确的换行，关闭 [#2497](https://github.com/TuSimple/naive-ui/issues/2497)
+- 修复 `n-tabs` 在内容过多时底部边框在滚动区域不显示，关闭 [#2500](https://github.com/TuSimple/naive-ui/issues/2500)
+
+## 2.25.3 (2022-02-23)
 
 ### Fixes
 
@@ -9,6 +16,11 @@
 - 修复 `n-data-table` 当 `filterOptions` 值为 0 时过滤不生效, 关闭 [#2392](https://github.com/TuSimple/naive-ui/issues/2392)
 - 修复 `n-data-table` 当 selection column 为某个 column 的子 column 时无法点击全选复选框
 - 修复 `n-table` 动态增加时 `border-color` 的样式异常，关闭 [#2403](https://github.com/TuSimple/naive-ui/issues/2403)
+- 修复 `n-tree` 的 `default-expand-all` 对于动态数据不生效
+- 修复 `n-form` 当 `model.xxx` 为 `undefined` 的时候会使用 `null` 作为验证值，关闭 [#2486](https://github.com/TuSimple/naive-ui/issues/2486)
+- 修复 `n-input` focus 样式优先级低于 hover，关闭 [#2480](https://github.com/TuSimple/naive-ui/issues/2480)
+- 修复 `n-data-table` 在使用 keep-alive 组件中使用虚拟滚动的显示问题，关闭 [#2183](https://github.com/TuSimple/naive-ui/issues/2183)
+- 修复 `notification` 出现的动画
 
 ### Feats
 
@@ -18,13 +30,18 @@
 - `n-switch` 新增 `checked-icon` 插槽
 - `n-switch` 新增 `unchecked-icon` 插槽
 - `n-tabs` 的 CSS 变量使用 `n` 作为前缀
-- `n-watermark` 新增组件，关闭 [#1745](https://github.com/TuSimple/naive-ui/issues/1745)
+- 新增 `n-watermark` 组件，关闭 [#1745](https://github.com/TuSimple/naive-ui/issues/1745)
+- `n-scrollbar` 新增 `scrollBy` 方法，关闭 [#2435](https://github.com/TuSimple/naive-ui/issues/2435)
+- `n-data-table` 的 `summary` 属性的 value 值支持 `VNodeChild`，关闭 [#2339](https://github.com/TuSimple/naive-ui/issues/2339)
+- `n-input-number` 可以使用长按来改变值，关闭 [#1293](https://github.com/TuSimple/naive-ui/issues/1293)
+- `n-description` 新增 `titleTextColor` 主题变量
 
 ### i18n
 
 - 新增 skSK locale
+- 完善 frFR locale
 
-## 2.25.2
+## 2.25.2 (2022-02-11)
 
 ### Fixes
 
