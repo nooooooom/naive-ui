@@ -28,12 +28,18 @@ export default defineComponent({
     return useDualCalendar(props, 'daterange')
   },
   render () {
-    const { mergedClsPrefix, mergedTheme, shortcuts } = this
+    const { mergedClsPrefix, mergedTheme, shortcuts, onRender } = this
+    onRender?.()
     return (
       <div
         ref="selfRef"
         tabindex={0}
-        class={`${mergedClsPrefix}-date-panel ${mergedClsPrefix}-date-panel--daterange`}
+        class={[
+          `${mergedClsPrefix}-date-panel`,
+          `${mergedClsPrefix}-date-panel--daterange`,
+          !this.panel && `${mergedClsPrefix}-date-panel--shadow`,
+          this.themeClass
+        ]}
         onClick={this.resetSelectingStatus}
         onKeydown={this.handlePanelKeyDown}
         onFocus={this.handlePanelFocus}
@@ -114,6 +120,7 @@ export default defineComponent({
                 onClick={() => this.handleDateClick(dateItem)}
                 onMouseenter={() => this.handleDateMouseEnter(dateItem)}
               >
+                <div class={`${mergedClsPrefix}-date-panel-date__trigger`} />
                 {dateItem.dateObject.date}
                 {dateItem.isCurrentDate ? (
                   <div class={`${mergedClsPrefix}-date-panel-date__sup`} />
@@ -199,6 +206,7 @@ export default defineComponent({
                 onClick={() => this.handleDateClick(dateItem)}
                 onMouseenter={() => this.handleDateMouseEnter(dateItem)}
               >
+                <div class={`${mergedClsPrefix}-date-panel-date__trigger`} />
                 {dateItem.dateObject.date}
                 {dateItem.isCurrentDate ? (
                   <div class={`${mergedClsPrefix}-date-panel-date__sup`} />

@@ -9,10 +9,10 @@ import {
 } from 'vue'
 import { TreeNode } from 'treemate'
 import { useMemo } from 'vooks'
-import type { SelectBaseOption } from '../../../select/src/interface'
-import { CheckmarkIcon } from '../../icons'
-import NBaseIcon from '../../icon'
+import type { SelectOption } from '../../../select/src/interface'
 import { render } from '../../../_utils'
+import { CheckmarkIcon } from '../../icons'
+import { NBaseIcon } from '../../icon'
 import {
   RenderLabelImpl,
   internalSelectionMenuInjectionKey,
@@ -49,7 +49,7 @@ export default defineComponent({
       required: true
     },
     tmNode: {
-      type: Object as PropType<TreeNode<SelectBaseOption>>,
+      type: Object as PropType<TreeNode<SelectOption>>,
       required: true
     }
   },
@@ -61,6 +61,9 @@ export default defineComponent({
       valueSetRef,
       renderLabelRef,
       renderOptionRef,
+      labelFieldRef,
+      valueFieldRef,
+      showCheckmarkRef,
       handleOptionClick,
       handleOptionMouseEnter
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -93,12 +96,15 @@ export default defineComponent({
         const { parent } = tmNode
         return parent && parent.rawNode.type === 'group'
       }),
+      showCheckmark: showCheckmarkRef,
       isPending: isPendingRef,
       isSelected: useMemo(() => {
         const { value } = valueRef
         const { value: multiple } = multipleRef
         if (value === null) return false
-        const optionValue = props.tmNode.rawNode.value
+        const optionValue = props.tmNode.rawNode[
+          valueFieldRef.value
+        ] as NonNullable<SelectOption['value']>
         if (multiple) {
           const { value: valueSet } = valueSetRef
           return valueSet.has(optionValue)
@@ -106,6 +112,7 @@ export default defineComponent({
           return value === optionValue
         }
       }),
+      labelField: labelFieldRef,
       renderLabel: renderLabelRef as Ref<RenderLabelImpl | undefined>,
       renderOption: renderOptionRef as Ref<RenderOptionImpl | undefined>,
       handleMouseMove,
@@ -120,18 +127,24 @@ export default defineComponent({
       isSelected,
       isPending,
       isGrouped,
-      multiple,
+      showCheckmark,
       renderOption,
       renderLabel,
       handleClick,
       handleMouseEnter,
       handleMouseMove
     } = this
-    const showCheckMark = multiple && isSelected
-    const checkmark = renderCheckMark(showCheckMark, clsPrefix)
+    const checkmark = renderCheckMark(isSelected, clsPrefix)
     const children = renderLabel
-      ? [renderLabel(rawNode, isSelected), checkmark]
-      : [render(rawNode.label, rawNode, isSelected), checkmark]
+      ? [renderLabel(rawNode, isSelected), showCheckmark && checkmark]
+      : [
+          render(
+            rawNode[this.labelField] as SelectOption['label'],
+            rawNode,
+            isSelected
+          ),
+          showCheckmark && checkmark
+        ]
     const node = (
       <div
         class={[
@@ -141,7 +154,8 @@ export default defineComponent({
             [`${clsPrefix}-base-select-option--disabled`]: rawNode.disabled,
             [`${clsPrefix}-base-select-option--selected`]: isSelected,
             [`${clsPrefix}-base-select-option--grouped`]: isGrouped,
-            [`${clsPrefix}-base-select-option--pending`]: isPending
+            [`${clsPrefix}-base-select-option--pending`]: isPending,
+            [`${clsPrefix}-base-select-option--show-checkmark`]: showCheckmark
           }
         ]}
         style={rawNode.style}

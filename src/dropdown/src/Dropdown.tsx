@@ -7,7 +7,6 @@ import {
   PropType,
   watch,
   provide,
-  CSSProperties,
   Ref,
   mergeProps
 } from 'vue'
@@ -17,7 +16,7 @@ import { FollowerPlacement } from 'vueuc'
 import type { InternalRenderBody } from '../../popover/src/interface'
 import { popoverBaseProps } from '../../popover/src/Popover'
 import type { PopoverInternalProps } from '../../popover/src/Popover'
-import { useConfig, useTheme } from '../../_mixins'
+import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { NPopover } from '../../popover'
 import {
@@ -43,13 +42,18 @@ import {
   RenderLabel,
   RenderIcon,
   RenderLabelImpl,
-  RenderIconImpl
+  RenderIconImpl,
+  RenderOption,
+  NodeProps,
+  RenderOptionImpl
 } from './interface'
 import { dropdownInjectionKey } from './context'
 
 export interface DropdownInjection {
   renderLabelRef: Ref<RenderLabelImpl | undefined>
   renderIconRef: Ref<RenderIconImpl | undefined>
+  renderOptionRef: Ref<RenderOptionImpl | undefined>
+  nodePropsRef: Ref<NodeProps | undefined>
   hoverKeyRef: Ref<Key | null>
   keyboardKeyRef: Ref<Key | null>
   lastToggledSubmenuKeyRef: Ref<Key | null>
@@ -89,6 +93,8 @@ const dropdownBaseProps = {
   showArrow: Boolean,
   renderLabel: Function as PropType<RenderLabel>,
   renderIcon: Function as PropType<RenderIcon>,
+  renderOption: Function as PropType<RenderOption>,
+  nodeProps: Function as PropType<NodeProps>,
   labelField: {
     type: String,
     default: 'label'
@@ -204,7 +210,7 @@ export default defineComponent({
       keyboardEnabledRef
     )
 
-    const { mergedClsPrefixRef } = useConfig(props)
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props)
 
     const themeRef = useTheme(
       'Dropdown',
@@ -231,6 +237,10 @@ export default defineComponent({
       activeKeyPathRef: activeKeyPathRef,
       animatedRef: toRef(props, 'animated'),
       mergedShowRef: mergedShowRef,
+      nodePropsRef: toRef(props, 'nodeProps'),
+      renderOptionRef: toRef(props, 'renderOption') as Ref<
+      RenderOptionImpl | undefined
+      >,
       doSelect,
       doUpdateShow
     })
@@ -244,7 +254,8 @@ export default defineComponent({
       if (onSelect) call(onSelect as OnUpdateValueImpl, key, node)
     }
     function doUpdateShow (value: boolean): void {
-      const { 'onUpdate:show': onUpdateShow } = props
+      const { 'onUpdate:show': _onUpdateShow, onUpdateShow } = props
+      if (_onUpdateShow) call(_onUpdateShow, value)
       if (onUpdateShow) call(onUpdateShow, value)
       uncontrolledShowRef.value = value
     }
@@ -318,6 +329,76 @@ export default defineComponent({
         keyboardKeyRef.value = nextKeyboardKey
       }
     }
+    const cssVarsRef = computed(() => {
+      const { size, inverted } = props
+      const {
+        common: { cubicBezierEaseInOut },
+        self
+      } = themeRef.value
+      const {
+        padding,
+        dividerColor,
+        borderRadius,
+        optionOpacityDisabled,
+        [createKey('optionIconSuffixWidth', size)]: optionIconSuffixWidth,
+        [createKey('optionSuffixWidth', size)]: optionSuffixWidth,
+        [createKey('optionIconPrefixWidth', size)]: optionIconPrefixWidth,
+        [createKey('optionPrefixWidth', size)]: optionPrefixWidth,
+        [createKey('fontSize', size)]: fontSize,
+        [createKey('optionHeight', size)]: optionHeight,
+        [createKey('optionIconSize', size)]: optionIconSize
+      } = self
+      const vars: any = {
+        '--n-bezier': cubicBezierEaseInOut,
+        '--n-font-size': fontSize,
+        '--n-padding': padding,
+        '--n-border-radius': borderRadius,
+        '--n-option-height': optionHeight,
+        '--n-option-prefix-width': optionPrefixWidth,
+        '--n-option-icon-prefix-width': optionIconPrefixWidth,
+        '--n-option-suffix-width': optionSuffixWidth,
+        '--n-option-icon-suffix-width': optionIconSuffixWidth,
+        '--n-option-icon-size': optionIconSize,
+        '--n-divider-color': dividerColor,
+        '--n-option-opacity-disabled': optionOpacityDisabled
+      }
+      // writing like this is the fastest method
+      if (inverted) {
+        vars['--n-color'] = self.colorInverted
+        vars['--n-option-color-hover'] = self.optionColorHoverInverted
+        vars['--n-option-color-active'] = self.optionColorActiveInverted
+        vars['--n-option-text-color'] = self.optionTextColorInverted
+        vars['--n-option-text-color-hover'] = self.optionTextColorHoverInverted
+        vars['--n-option-text-color-active'] =
+          self.optionTextColorActiveInverted
+        vars['--n-option-text-color-child-active'] =
+          self.optionTextColorChildActiveInverted
+        vars['--n-prefix-color'] = self.prefixColorInverted
+        vars['--n-suffix-color'] = self.suffixColorInverted
+        vars['--n-group-header-text-color'] = self.groupHeaderTextColorInverted
+      } else {
+        vars['--n-color'] = self.color
+        vars['--n-option-color-hover'] = self.optionColorHover
+        vars['--n-option-color-active'] = self.optionColorActive
+        vars['--n-option-text-color'] = self.optionTextColor
+        vars['--n-option-text-color-hover'] = self.optionTextColorHover
+        vars['--n-option-text-color-active'] = self.optionTextColorActive
+        vars['--n-option-text-color-child-active'] =
+          self.optionTextColorChildActive
+        vars['--n-prefix-color'] = self.prefixColor
+        vars['--n-suffix-color'] = self.suffixColor
+        vars['--n-group-header-text-color'] = self.groupHeaderTextColor
+      }
+      return vars
+    })
+    const themeClassHandle = inlineThemeDisabled
+      ? useThemeClass(
+        'dropdown',
+        computed(() => `${props.size[0]}${props.inverted ? 'i' : ''}`),
+        cssVarsRef,
+        props
+      )
+      : undefined
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       mergedTheme: themeRef,
@@ -327,70 +408,9 @@ export default defineComponent({
       mergedShow: mergedShowRef,
       // methods
       doUpdateShow,
-      cssVars: computed(() => {
-        const { size, inverted } = props
-        const {
-          common: { cubicBezierEaseInOut },
-          self
-        } = themeRef.value
-        const {
-          padding,
-          dividerColor,
-          borderRadius,
-          optionOpacityDisabled,
-          [createKey('optionIconSuffixWidth', size)]: optionIconSuffixWidth,
-          [createKey('optionSuffixWidth', size)]: optionSuffixWidth,
-          [createKey('optionIconPrefixWidth', size)]: optionIconPrefixWidth,
-          [createKey('optionPrefixWidth', size)]: optionPrefixWidth,
-          [createKey('fontSize', size)]: fontSize,
-          [createKey('optionHeight', size)]: optionHeight,
-          [createKey('optionIconSize', size)]: optionIconSize
-        } = self
-        const vars: any = {
-          '--n-bezier': cubicBezierEaseInOut,
-          '--n-font-size': fontSize,
-          '--n-padding': padding,
-          '--n-border-radius': borderRadius,
-          '--n-option-height': optionHeight,
-          '--n-option-prefix-width': optionPrefixWidth,
-          '--n-option-icon-prefix-width': optionIconPrefixWidth,
-          '--n-option-suffix-width': optionSuffixWidth,
-          '--n-option-icon-suffix-width': optionIconSuffixWidth,
-          '--n-option-icon-size': optionIconSize,
-          '--n-divider-color': dividerColor,
-          '--n-option-opacity-disabled': optionOpacityDisabled
-        }
-        // writing like this is the fastest method
-        if (inverted) {
-          vars['--n-color'] = self.colorInverted
-          vars['--n-option-color-hover'] = self.optionColorHoverInverted
-          vars['--n-option-color-active'] = self.optionColorActiveInverted
-          vars['--n-option-text-color'] = self.optionTextColorInverted
-          vars['--n-option-text-color-hover'] =
-            self.optionTextColorHoverInverted
-          vars['--n-option-text-color-active'] =
-            self.optionTextColorActiveInverted
-          vars['--n-option-text-color-child-active'] =
-            self.optionTextColorChildActiveInverted
-          vars['--n-prefix-color'] = self.prefixColorInverted
-          vars['--n-suffix-color'] = self.suffixColorInverted
-          vars['--n-group-header-text-color'] =
-            self.groupHeaderTextColorInverted
-        } else {
-          vars['--n-color'] = self.color
-          vars['--n-option-color-hover'] = self.optionColorHover
-          vars['--n-option-color-active'] = self.optionColorActive
-          vars['--n-option-text-color'] = self.optionTextColor
-          vars['--n-option-text-color-hover'] = self.optionTextColorHover
-          vars['--n-option-text-color-active'] = self.optionTextColorActive
-          vars['--n-option-text-color-child-active'] =
-            self.optionTextColorChildActive
-          vars['--n-prefix-color'] = self.prefixColor
-          vars['--n-suffix-color'] = self.suffixColor
-          vars['--n-group-header-text-color'] = self.groupHeaderTextColor
-        }
-        return vars
-      })
+      cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
+      themeClass: themeClassHandle?.themeClass,
+      onRender: themeClassHandle?.onRender
     }
   },
   render () {
@@ -402,18 +422,13 @@ export default defineComponent({
       onMouseleave
     ) => {
       const { mergedClsPrefix } = this
+      this.onRender?.()
       const dropdownProps = {
         ref: createRefSetter(ref),
-        class: [
-          className,
-          `${mergedClsPrefix}-dropdown`,
-          this.trigger === 'manual' &&
-            `${mergedClsPrefix}-popover--manual-trigger`,
-          this.showArrow && `${mergedClsPrefix}-popover--show-arrow`
-        ],
+        class: [className, `${mergedClsPrefix}-dropdown`, this.themeClass],
         clsPrefix: mergedClsPrefix,
         tmNodes: this.tmNodes,
-        style: [style, this.cssVars as CSSProperties],
+        style: [style, this.cssVars as any],
         showArrow: this.showArrow,
         arrowStyle: this.arrowStyle,
         onMouseenter,
@@ -430,7 +445,8 @@ export default defineComponent({
       theme: mergedTheme.peers.Popover,
       themeOverrides: mergedTheme.peerOverrides.Popover,
       internalRenderBody: renderPopoverBody,
-      onUpdateShow: this.doUpdateShow
+      onUpdateShow: this.doUpdateShow,
+      'onUpdate:show': undefined
     }
     return (
       <NPopover {...keep(this.$props, popoverPropKeys)} {...popoverProps}>

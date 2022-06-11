@@ -9,8 +9,6 @@ import {
   computed,
   CSSProperties,
   provide,
-  watch,
-  nextTick,
   watchEffect,
   HTMLAttributes
 } from 'vue'
@@ -25,6 +23,7 @@ import { useIsMounted, useMergedState } from 'vooks'
 import { clickoutside } from 'vdirs'
 import { createTreeMate, CheckStrategy } from 'treemate'
 import { happensIn } from 'seemly'
+import type { FormValidationStatus } from '../../form/src/interface'
 import { Key, InternalTreeInst } from '../../tree/src/interface'
 import type { SelectBaseOption } from '../../select/src/interface'
 import { createTreeMateOptions, treeSharedProps } from '../../tree/src/Tree'
@@ -36,13 +35,22 @@ import {
 } from '../../_internal'
 import { NTree } from '../../tree'
 import { NEmpty } from '../../empty'
-import { useConfig, useFormItem, useLocale, useTheme } from '../../_mixins'
+import {
+  useConfig,
+  useFormItem,
+  useLocale,
+  useTheme,
+  useThemeClass
+} from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import {
   call,
   ExtractPublicPropTypes,
   MaybeArray,
+  resolveSlot,
+  resolveWrappedSlot,
   useAdjustedTo,
+  useOnResize,
   warnOnce
 } from '../../_utils'
 import { treeSelectLight, TreeSelectTheme } from '../styles'
@@ -55,10 +63,11 @@ import type {
 import { treeSelectInjectionKey } from './interface'
 import {
   treeOption2SelectOption,
-  filterTree,
   treeOption2SelectOptionWithPath
 } from './utils'
 import style from './styles/index.cssr'
+
+type OnLoad = (node: TreeSelectOption) => Promise<void>
 
 const props = {
   ...(useTheme.props as ThemeProps<TreeSelectTheme>),
@@ -93,6 +102,7 @@ const props = {
     type: String as PropType<CheckStrategy>,
     default: 'all'
   },
+  loading: Boolean,
   maxTagCount: [String, Number] as PropType<number | 'responsive'>,
   multiple: Boolean,
   showPath: Boolean,
@@ -123,9 +133,11 @@ const props = {
     type: Boolean,
     default: true
   },
+  status: String as PropType<FormValidationStatus>,
   ...treeSharedProps,
   onBlur: Function as PropType<(e: FocusEvent) => void>,
   onFocus: Function as PropType<(e: FocusEvent) => void>,
+  onLoad: Function as PropType<OnLoad>,
   onUpdateShow: [Function, Array] as PropType<
   MaybeArray<(show: boolean) => void>
   >,
@@ -137,10 +149,7 @@ const props = {
   /**
    * @deprecated
    */
-  leafOnly: {
-    type: Boolean,
-    default: undefined
-  }
+  leafOnly: Boolean
 } as const
 
 export type TreeSelectProps = ExtractPublicPropTypes<typeof props>
@@ -151,7 +160,7 @@ export default defineComponent({
   setup (props) {
     if (__DEV__) {
       watchEffect(() => {
-        if (props.leafOnly !== undefined) {
+        if (props.leafOnly) {
           warnOnce(
             'tree-select',
             '`leaf-only` is deprecated, please use `check-strategy="child"` instead.'
@@ -163,7 +172,8 @@ export default defineComponent({
     const triggerInstRef = ref<InternalSelectionInst | null>(null)
     const treeInstRef = ref<InternalTreeInst | null>(null)
     const menuElRef = ref<HTMLDivElement | null>(null)
-    const { mergedClsPrefixRef, namespaceRef } = useConfig(props)
+    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } =
+      useConfig(props)
     const { localeRef } = useLocale('Select')
     const {
       mergedSizeRef,
@@ -195,43 +205,10 @@ export default defineComponent({
           .includes(pattern.toLowerCase())
       }
     })
-    const filteredTreeInfoRef = computed<{
-      filteredTree: TreeSelectOption[]
-      highlightKeySet: Set<Key> | undefined
-      expandedKeys: Key[] | undefined
-    }>(() => {
-      if (!props.filterable) {
-        return {
-          filteredTree: props.options,
-          highlightKeySet: undefined,
-          expandedKeys: undefined
-        }
-      }
-      const { value: pattern } = patternRef
-      if (!pattern.length || !mergedFilterRef.value) {
-        return {
-          filteredTree: props.options,
-          highlightKeySet: undefined,
-          expandedKeys: undefined
-        }
-      }
-      return filterTree(
-        props.options,
-        mergedFilterRef.value,
-        pattern,
-        props.keyField
-      )
-    })
     // used to resolve selected options
     const dataTreeMateRef = computed(() =>
       createTreeMate<TreeSelectOption>(
         props.options,
-        createTreeMateOptions(props.keyField, props.childrenField)
-      )
-    )
-    const displayTreeMateRef = computed(() =>
-      createTreeMate<TreeSelectOption>(
-        filteredTreeInfoRef.value.filteredTree,
         createTreeMateOptions(props.keyField, props.childrenField)
       )
     )
@@ -250,7 +227,7 @@ export default defineComponent({
     // function to reuse it.
     const uncontrolledExpandedKeysRef = ref(
       props.defaultExpandAll
-        ? displayTreeMateRef.value.getNonLeafKeys()
+        ? undefined // leave it, n-tree will handle it
         : props.defaultExpandedKeys || props.expandedKeys
     )
     const controlledExpandedKeysRef = toRef(props, 'expandedKeys')
@@ -307,7 +284,8 @@ export default defineComponent({
         const { value: treeMate } = dataTreeMateRef
         const { checkedKeys } = treeMate.getCheckedKeys(mergedValue, {
           checkStrategy: props.checkStrategy,
-          cascade: mergedCascadeRef.value
+          cascade: mergedCascadeRef.value,
+          allowNotLoaded: props.allowCheckingNotLoaded
         })
         const { labelField } = props
         checkedKeys.forEach((value) => {
@@ -513,19 +491,30 @@ export default defineComponent({
       // only work for multiple mode
       const { value: mergedValue } = mergedValueRef
       if (Array.isArray(mergedValue)) {
-        const index = mergedValue.findIndex((key) => key === option.value)
+        const { value: treeMate } = dataTreeMateRef
+        // all visible checked keys
+        const { checkedKeys: checkedKeysValue } = treeMate.getCheckedKeys(
+          mergedValue,
+          {
+            cascade: mergedCascadeRef.value,
+            allowNotLoaded: props.allowCheckingNotLoaded
+          }
+        )
+        const index = checkedKeysValue.findIndex((key) => key === option.value)
         if (~index) {
           if (props.checkable) {
-            const { checkedKeys } = dataTreeMateRef.value.uncheck(
+            const { checkedKeys } = treeMate.uncheck(
               option.value,
-              mergedValue,
+              checkedKeysValue,
               {
-                cascade: mergedCascadeRef.value
+                checkStrategy: props.checkStrategy,
+                cascade: mergedCascadeRef.value,
+                allowNotLoaded: props.allowCheckingNotLoaded
               }
             )
             doUpdateValue(checkedKeys, getOptionsByKeys(checkedKeys))
           } else {
-            const nextValue = Array.from(mergedValue)
+            const nextValue = Array.from(checkedKeysValue)
             nextValue.splice(index, 1)
             doUpdateValue(nextValue, getOptionsByKeys(nextValue))
           }
@@ -543,7 +532,7 @@ export default defineComponent({
       }
     }
     function handleKeyup (e: KeyboardEvent): void {
-      if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+      if (e.key === 'Enter') {
         if (mergedShowRef.value) {
           treeHandleKeyup(e)
           if (!props.multiple) {
@@ -554,13 +543,13 @@ export default defineComponent({
           openMenu()
         }
         e.preventDefault()
-      } else if (e.code === 'Escape') {
+      } else if (e.key === 'Escape') {
         closeMenu()
         focusSelection()
       } else {
         if (mergedShowRef.value) {
           treeHandleKeyup(e)
-        } else if (e.code === 'ArrowDown') {
+        } else if (e.key === 'ArrowDown') {
           openMenu()
         }
       }
@@ -581,34 +570,17 @@ export default defineComponent({
       if (!happensIn(e, 'action')) e.preventDefault()
     }
     provide(treeSelectInjectionKey, {
-      pendingNodeKeyRef
+      pendingNodeKeyRef,
+      dataTreeMate: dataTreeMateRef
     })
-    function syncPosition (): void {
+
+    function handleTriggerOrMenuResize (): void {
+      if (!mergedShowRef.value) return
       followerInstRef.value?.syncPosition()
     }
-    watch(mergedValueRef, () => {
-      if (!mergedShowRef.value) return
-      void nextTick(syncPosition)
-    })
-    let memorizedExpandedKeys: Key[] | undefined
-    watch(patternRef, (value, oldValue) => {
-      if (!value.length) {
-        if (memorizedExpandedKeys !== undefined) {
-          doUpdateExpandedKeys(
-            memorizedExpandedKeys,
-            getOptionsByKeys(memorizedExpandedKeys)
-          )
-        }
-      } else {
-        if (!oldValue.length) {
-          memorizedExpandedKeys = mergedExpandedKeysRef.value
-        }
-        const { expandedKeys } = filteredTreeInfoRef.value
-        if (expandedKeys !== undefined) {
-          doUpdateExpandedKeys(expandedKeys, getOptionsByKeys(expandedKeys))
-        }
-      }
-    })
+
+    useOnResize(menuElRef, handleTriggerOrMenuResize)
+
     const themeRef = useTheme(
       'TreeSelect',
       '-tree-select',
@@ -617,6 +589,35 @@ export default defineComponent({
       props,
       mergedClsPrefixRef
     )
+
+    const cssVarsRef = computed(() => {
+      const {
+        common: { cubicBezierEaseInOut },
+        self: {
+          menuBoxShadow,
+          menuBorderRadius,
+          menuColor,
+          menuHeight,
+          actionPadding,
+          actionDividerColor,
+          actionTextColor
+        }
+      } = themeRef.value
+      return {
+        '--n-menu-box-shadow': menuBoxShadow,
+        '--n-menu-border-radius': menuBorderRadius,
+        '--n-menu-color': menuColor,
+        '--n-menu-height': menuHeight,
+        '--n-bezier': cubicBezierEaseInOut,
+        '--n-action-padding': actionPadding,
+        '--n-action-text-color': actionTextColor,
+        '--n-action-divider-color': actionDividerColor
+      }
+    })
+    const themeClassHandle = inlineThemeDisabled
+      ? useThemeClass('tree-select', undefined, cssVarsRef, props)
+      : undefined
+
     return {
       menuElRef,
       mergedStatus: mergedStatusRef,
@@ -630,9 +631,6 @@ export default defineComponent({
       adjustedTo: useAdjustedTo(props),
       isMounted: useIsMounted(),
       focused: focusedRef,
-      filteredTreeInfo: filteredTreeInfoRef,
-      dataTreeMate: dataTreeMateRef,
-      displayTreeMate: displayTreeMateRef,
       menuPadding: menuPaddingRef,
       mergedPlaceholder: mergedPlaceholderRef,
       mergedExpandedKeys: mergedExpandedKeysRef,
@@ -645,6 +643,8 @@ export default defineComponent({
       pattern: patternRef,
       pendingNodeKey: pendingNodeKeyRef,
       mergedCascade: mergedCascadeRef,
+      mergedFilter: mergedFilterRef,
+      handleTriggerOrMenuResize,
       doUpdateExpandedKeys,
       handleMenuLeave,
       handleTriggerClick,
@@ -662,31 +662,10 @@ export default defineComponent({
       handleKeyup,
       handleTabOut,
       handleMenuMousedown,
-      cssVars: computed(() => {
-        const {
-          common: { cubicBezierEaseInOut },
-          self: {
-            menuBoxShadow,
-            menuBorderRadius,
-            menuColor,
-            menuHeight,
-            actionPadding,
-            actionDividerColor,
-            actionTextColor
-          }
-        } = themeRef.value
-        return {
-          '--n-menu-box-shadow': menuBoxShadow,
-          '--n-menu-border-radius': menuBorderRadius,
-          '--n-menu-color': menuColor,
-          '--n-menu-height': menuHeight,
-          '--n-bezier': cubicBezierEaseInOut,
-          '--n-action-padding': actionPadding,
-          '--n-action-text-color': actionTextColor,
-          '--n-action-divider-color': actionDividerColor
-        }
-      }),
-      mergedTheme: themeRef
+      mergedTheme: themeRef,
+      cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
+      themeClass: themeClassHandle?.themeClass,
+      onRender: themeClassHandle?.onRender
     }
   },
   render () {
@@ -701,6 +680,7 @@ export default defineComponent({
                   default: () => (
                     <NInternalSelection
                       ref="triggerInstRef"
+                      onResize={this.handleTriggerOrMenuResize}
                       status={this.mergedStatus}
                       focused={this.focused}
                       clsPrefix={mergedClsPrefix}
@@ -715,6 +695,7 @@ export default defineComponent({
                       placeholder={this.mergedPlaceholder}
                       disabled={this.mergedDisabled}
                       active={this.mergedShow}
+                      loading={this.loading}
                       multiple={this.multiple}
                       maxTagCount={this.maxTagCount}
                       showArrow={true}
@@ -729,7 +710,11 @@ export default defineComponent({
                       onDeleteOption={this.handleDeleteOption}
                       onKeydown={this.handleKeydown}
                       onKeyup={this.handleKeyup}
-                    />
+                    >
+                      {{
+                        arrow: () => [this.$slots.arrow?.()]
+                      }}
+                    </NInternalSelection>
                   )
                 }}
               </VTarget>,
@@ -755,17 +740,19 @@ export default defineComponent({
                           if (!this.mergedShow) return null
                           const {
                             mergedClsPrefix,
-                            filteredTreeInfo,
                             checkable,
                             multiple,
-                            menuProps
+                            menuProps,
+                            options
                           } = this
+                          this.onRender?.()
                           return withDirectives(
                             <div
                               {...menuProps}
                               class={[
                                 `${mergedClsPrefix}-tree-select-menu`,
-                                menuProps?.class
+                                menuProps?.class,
+                                this.themeClass
                               ]}
                               ref="menuElRef"
                               style={[
@@ -779,81 +766,85 @@ export default defineComponent({
                               onFocusin={this.handleMenuFocusin}
                               onFocusout={this.handleMenuFocusout}
                             >
-                              {filteredTreeInfo.filteredTree.length ? (
-                                <NTree
-                                  ref="treeInstRef"
-                                  blockLine
-                                  animated={false}
-                                  data={filteredTreeInfo.filteredTree}
-                                  cancelable={multiple}
-                                  labelField={this.labelField}
-                                  theme={mergedTheme.peers.Tree}
-                                  themeOverrides={
-                                    mergedTheme.peerOverrides.Tree
-                                  }
-                                  defaultExpandAll={this.defaultExpandAll}
-                                  defaultExpandedKeys={this.defaultExpandedKeys}
-                                  expandedKeys={this.mergedExpandedKeys}
-                                  checkedKeys={this.treeCheckedKeys}
-                                  selectedKeys={this.treeSelectedKeys}
-                                  checkable={checkable}
-                                  checkStrategy={this.checkStrategy}
-                                  cascade={this.mergedCascade}
-                                  leafOnly={this.leafOnly}
-                                  multiple={this.multiple}
-                                  virtualScroll={
-                                    this.consistentMenuWidth &&
-                                    this.virtualScroll
-                                  }
-                                  internalDataTreeMate={this.dataTreeMate}
-                                  internalDisplayTreeMate={this.displayTreeMate}
-                                  internalHighlightKeySet={
-                                    filteredTreeInfo.highlightKeySet
-                                  }
-                                  internalUnifySelectCheck
-                                  internalScrollable
-                                  internalScrollablePadding={this.menuPadding}
-                                  internalFocusable={false}
-                                  internalCheckboxFocusable={false}
-                                  onUpdateCheckedKeys={
-                                    this.handleUpdateCheckedKeys
-                                  }
-                                  onUpdateIndeterminateKeys={
-                                    this.handleUpdateIndeterminateKeys
-                                  }
-                                  onUpdateExpandedKeys={
-                                    this.doUpdateExpandedKeys
-                                  }
-                                />
-                              ) : (
-                                <div
-                                  class={`${mergedClsPrefix}-tree-select-menu__empty`}
-                                >
-                                  {$slots.empty ? (
-                                    $slots.empty()
-                                  ) : (
-                                    <NEmpty
-                                      theme={mergedTheme.peers.Empty}
-                                      themeOverrides={
-                                        mergedTheme.peerOverrides.Empty
-                                      }
-                                    />
-                                  )}
-                                </div>
-                              )}
-                              {$slots.action && (
-                                <div
-                                  class={`${mergedClsPrefix}-tree-select-menu__action`}
-                                  data-action
-                                >
-                                  {{
-                                    default: $slots.action
-                                  }}
-                                </div>
-                              )}
+                              <NTree
+                                ref="treeInstRef"
+                                blockLine
+                                allowCheckingNotLoaded={
+                                  this.allowCheckingNotLoaded
+                                }
+                                showIrrelevantNodes={false}
+                                animated={false}
+                                pattern={this.pattern}
+                                filter={this.mergedFilter}
+                                data={options}
+                                cancelable={multiple}
+                                labelField={this.labelField}
+                                keyField={this.keyField}
+                                childrenField={this.childrenField}
+                                theme={mergedTheme.peers.Tree}
+                                themeOverrides={mergedTheme.peerOverrides.Tree}
+                                defaultExpandAll={this.defaultExpandAll}
+                                defaultExpandedKeys={this.defaultExpandedKeys}
+                                expandedKeys={this.mergedExpandedKeys}
+                                checkedKeys={this.treeCheckedKeys}
+                                selectedKeys={this.treeSelectedKeys}
+                                checkable={checkable}
+                                checkStrategy={this.checkStrategy}
+                                cascade={this.mergedCascade}
+                                leafOnly={this.leafOnly}
+                                multiple={this.multiple}
+                                virtualScroll={
+                                  this.consistentMenuWidth && this.virtualScroll
+                                }
+                                internalTreeSelect
+                                internalUnifySelectCheck
+                                internalScrollable
+                                internalScrollablePadding={this.menuPadding}
+                                internalFocusable={false}
+                                internalCheckboxFocusable={false}
+                                internalRenderEmpty={() => (
+                                  <div
+                                    class={`${mergedClsPrefix}-tree-select-menu__empty`}
+                                  >
+                                    {resolveSlot($slots.empty, () => [
+                                      <NEmpty
+                                        theme={mergedTheme.peers.Empty}
+                                        themeOverrides={
+                                          mergedTheme.peerOverrides.Empty
+                                        }
+                                      />
+                                    ])}
+                                  </div>
+                                )}
+                                onLoad={this.onLoad}
+                                onUpdateCheckedKeys={
+                                  this.handleUpdateCheckedKeys
+                                }
+                                onUpdateIndeterminateKeys={
+                                  this.handleUpdateIndeterminateKeys
+                                }
+                                onUpdateExpandedKeys={this.doUpdateExpandedKeys}
+                              />
+                              {resolveWrappedSlot($slots.action, (children) => {
+                                return children ? (
+                                  <div
+                                    class={`${mergedClsPrefix}-tree-select-menu__action`}
+                                    data-action
+                                  >
+                                    {children}
+                                  </div>
+                                ) : null
+                              })}
                               <NBaseFocusDetector onFocus={this.handleTabOut} />
                             </div>,
-                            [[clickoutside, this.handleMenuClickoutside]]
+                            [
+                              [
+                                clickoutside,
+                                this.handleMenuClickoutside,
+                                undefined as unknown as string,
+                                { capture: true }
+                              ]
+                            ]
                           )
                         }
                       }}

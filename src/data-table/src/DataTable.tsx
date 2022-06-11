@@ -9,7 +9,8 @@ import {
   toRef,
   CSSProperties,
   Transition,
-  watchEffect
+  watchEffect,
+  onDeactivated
 } from 'vue'
 import { createId } from 'seemly'
 import { useConfig, useLocale, useTheme, useThemeClass } from '../../_mixins'
@@ -38,7 +39,8 @@ import type {
   DataTableInst,
   OnUpdateExpandedRowKeys,
   CreateSummary,
-  CreateRowProps
+  CreateRowProps,
+  DataTableOnLoad
 } from './interface'
 import { dataTableInjectionKey } from './interface'
 import { useGroupHeader } from './use-group-header'
@@ -50,6 +52,10 @@ export const dataTableProps = {
   pagination: {
     type: [Object, Boolean] as PropType<false | PaginationProps>,
     default: false
+  },
+  paginateSinglePage: {
+    type: Boolean,
+    default: true
   },
   minHeight: [Number, String] as PropType<string | number>,
   maxHeight: [Number, String] as PropType<string | number>,
@@ -104,6 +110,7 @@ export const dataTableProps = {
     type: String as PropType<'auto' | 'fixed'>,
     default: 'auto'
   },
+  allowCheckingNotLoaded: Boolean,
   cascade: {
     type: Boolean,
     default: true
@@ -117,6 +124,11 @@ export const dataTableProps = {
     default: 16
   },
   flexHeight: Boolean,
+  paginationBehaviorOnFilter: {
+    type: String as PropType<'first' | 'current'>,
+    default: 'current'
+  },
+  onLoad: Function as PropType<DataTableOnLoad>,
   'onUpdate:page': [Function, Array] as PropType<
   PaginationProps['onUpdate:page']
   >,
@@ -145,6 +157,7 @@ export const dataTableProps = {
   onUpdateExpandedRowKeys: [Function, Array] as PropType<
   MaybeArray<OnUpdateExpandedRowKeys>
   >,
+  onScroll: Function as PropType<(e: Event) => void>,
   // deprecated
   onPageChange: [Function, Array] as PropType<PaginationProps['onUpdate:page']>,
   onPageSizeChange: [Function, Array] as PropType<
@@ -224,6 +237,9 @@ export default defineComponent({
     )
     const bodyWidthRef = ref<number | null>(null)
     const scrollPartRef = ref<'head' | 'body'>('body')
+    onDeactivated(() => {
+      scrollPartRef.value = 'body'
+    })
     const mainTableInstRef = ref<MainTableRef | null>(null)
     const { rowsRef, colsRef, dataRelatedColsRef, hasEllipsisRef } =
       useGroupHeader(props)
@@ -237,7 +253,8 @@ export default defineComponent({
       mergedPaginationRef,
       mergedFilterStateRef,
       mergedSortStateRef,
-      firstContentfulColIndexRef,
+      childTriggerColIndexRef,
+      doUpdatePage,
       doUpdateFilters,
       deriveNextSorter,
       filter,
@@ -303,9 +320,10 @@ export default defineComponent({
       return props.tableLayout
     })
     provide(dataTableInjectionKey, {
+      loadingKeySetRef: ref(new Set<RowKey>()),
       slots,
       indentRef: toRef(props, 'indent'),
-      firstContentfulColIndexRef,
+      childTriggerColIndexRef,
       bodyWidthRef,
       componentId: createId(),
       hoverKeyRef,
@@ -346,9 +364,6 @@ export default defineComponent({
         return selectionColumn?.options
       }),
       rawPaginatedDataRef,
-      hasChildrenRef: computed(() => {
-        return treeMateRef.value.maxLevel > 0
-      }),
       filterMenuCssVarsRef: computed(() => {
         const {
           self: { actionDividerColor, actionPadding, actionButtonMargin }
@@ -360,12 +375,15 @@ export default defineComponent({
           '--n-action-divider-color': actionDividerColor
         } as CSSProperties
       }),
+      onLoadRef: toRef(props, 'onLoad'),
       mergedTableLayoutRef,
       maxHeightRef: toRef(props, 'maxHeight'),
       minHeightRef: toRef(props, 'minHeight'),
       flexHeightRef: toRef(props, 'flexHeight'),
       headerCheckboxDisabledRef,
+      paginationBehaviorOnFilterRef: toRef(props, 'paginationBehaviorOnFilter'),
       syncScrollState,
+      doUpdatePage,
       doUpdateFilters,
       deriveNextSorter,
       doCheck,
@@ -481,6 +499,18 @@ export default defineComponent({
         props
       )
       : undefined
+    const mergedShowPaginationRef = computed(() => {
+      if (!props.pagination) return false
+      if (props.paginateSinglePage) return true
+      const mergedPagination = mergedPaginationRef.value
+      const { pageCount } = mergedPagination
+      if (pageCount !== undefined) return pageCount > 1
+      return (
+        mergedPagination.itemCount &&
+        mergedPagination.pageSize &&
+        mergedPagination.itemCount > mergedPagination.pageSize
+      )
+    })
     return {
       mainTableInstRef,
       mergedClsPrefix: mergedClsPrefixRef,
@@ -489,6 +519,7 @@ export default defineComponent({
       mergedBordered: mergedBorderedRef,
       mergedBottomBordered: mergedBottomBorderedRef,
       mergedPagination: mergedPaginationRef,
+      mergedShowPagination: mergedShowPaginationRef,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
       onRender: themeClassHandle?.onRender,
@@ -518,7 +549,7 @@ export default defineComponent({
         <div class={`${mergedClsPrefix}-data-table-wrapper`}>
           <MainTable ref="mainTableInstRef" />
         </div>
-        {this.pagination ? (
+        {this.mergedShowPagination ? (
           <div class={`${mergedClsPrefix}-data-table__pagination`}>
             <NPagination
               theme={this.mergedTheme.peers.Pagination}

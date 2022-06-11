@@ -6,6 +6,8 @@ import { useConfig, useTheme } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { spaceLight } from '../styles'
 import type { SpaceTheme } from '../styles'
+import useRtl from '../../_mixins/use-rtl'
+import { ensureSupportFlexGap } from './utils'
 
 type Align =
   | 'stretch'
@@ -22,6 +24,8 @@ export type Justify =
   | 'center'
   | 'space-around'
   | 'space-between'
+  | 'space-evenly'
+
 const spaceProps = {
   ...(useTheme.props as ThemeProps<SpaceTheme>),
   align: String as PropType<Align>,
@@ -50,7 +54,7 @@ export default defineComponent({
   name: 'Space',
   props: spaceProps,
   setup (props) {
-    const { mergedClsPrefixRef } = useConfig(props)
+    const { mergedClsPrefixRef, mergedRtlRef } = useConfig(props)
     const themeRef = useTheme(
       'Space',
       '-space',
@@ -59,7 +63,10 @@ export default defineComponent({
       props,
       mergedClsPrefixRef
     )
+    const rtlEnabledRef = useRtl('Space', mergedRtlRef, mergedClsPrefixRef)
     return {
+      useGap: ensureSupportFlexGap(),
+      rtlEnabled: rtlEnabledRef,
       mergedClsPrefix: mergedClsPrefixRef,
       margin: computed<{ horizontal: number, vertical: number }>(() => {
         const { size } = props
@@ -95,7 +102,9 @@ export default defineComponent({
       itemStyle,
       margin,
       wrap,
-      mergedClsPrefix
+      mergedClsPrefix,
+      rtlEnabled,
+      useGap
     } = this
     const children = flatten(getSlot(this))
     if (!children.length) return null
@@ -108,7 +117,10 @@ export default defineComponent({
     return (
       <div
         role="none"
-        class={`${mergedClsPrefix}-space`}
+        class={[
+          `${mergedClsPrefix}-space`,
+          rtlEnabled && `${mergedClsPrefix}-space--rtl`
+        ]}
         style={{
           display: inline ? 'inline-flex' : 'flex',
           flexDirection: vertical ? 'column' : 'row',
@@ -116,9 +128,10 @@ export default defineComponent({
             ? 'flex-' + justify
             : justify,
           flexWrap: !wrap || vertical ? 'nowrap' : 'wrap',
-          marginTop: vertical ? '' : `-${semiVerticalMargin}`,
-          marginBottom: vertical ? '' : `-${semiVerticalMargin}`,
-          alignItems: align
+          marginTop: useGap || vertical ? '' : `-${semiVerticalMargin}`,
+          marginBottom: useGap || vertical ? '' : `-${semiVerticalMargin}`,
+          alignItems: align,
+          gap: useGap ? `${margin.vertical}px ${margin.horizontal}px` : ''
         }}
       >
         {children.map((child, index) => (
@@ -129,26 +142,45 @@ export default defineComponent({
               {
                 maxWidth: '100%'
               },
-              vertical
-                ? {
-                    marginBottom: index !== lastIndex ? verticalMargin : ''
-                  }
-                : {
-                    marginRight: isJustifySpace
-                      ? justify === 'space-between' && index === lastIndex
-                        ? ''
-                        : semiHorizontalMargin
-                      : index !== lastIndex
-                        ? horizontalMargin
-                        : '',
-                    marginLeft: isJustifySpace
-                      ? justify === 'space-between' && index === 0
-                        ? ''
-                        : semiHorizontalMargin
-                      : '',
-                    paddingTop: semiVerticalMargin,
-                    paddingBottom: semiVerticalMargin
-                  }
+              useGap
+                ? ''
+                : vertical
+                  ? {
+                      marginBottom: index !== lastIndex ? verticalMargin : ''
+                    }
+                  : rtlEnabled
+                    ? {
+                        marginLeft: isJustifySpace
+                          ? justify === 'space-between' && index === lastIndex
+                            ? ''
+                            : semiHorizontalMargin
+                          : index !== lastIndex
+                            ? horizontalMargin
+                            : '',
+                        marginRight: isJustifySpace
+                          ? justify === 'space-between' && index === 0
+                            ? ''
+                            : semiHorizontalMargin
+                          : '',
+                        paddingTop: semiVerticalMargin,
+                        paddingBottom: semiVerticalMargin
+                      }
+                    : {
+                        marginRight: isJustifySpace
+                          ? justify === 'space-between' && index === lastIndex
+                            ? ''
+                            : semiHorizontalMargin
+                          : index !== lastIndex
+                            ? horizontalMargin
+                            : '',
+                        marginLeft: isJustifySpace
+                          ? justify === 'space-between' && index === 0
+                            ? ''
+                            : semiHorizontalMargin
+                          : '',
+                        paddingTop: semiVerticalMargin,
+                        paddingBottom: semiVerticalMargin
+                      }
             ]}
           >
             {child}

@@ -190,6 +190,7 @@ export default cB('input', `
       white-space: pre-wrap;
     `),
     cE('textarea-mirror', `
+      width: 100%;
       pointer-events: none;
       overflow: hidden;
       visibility: hidden;
@@ -245,6 +246,9 @@ export default cB('input', `
   ]),
   cNotM('disabled', [
     cE('eye', `
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--n-icon-color);
       cursor: pointer;
     `, [
@@ -314,11 +318,13 @@ export default cB('input', `
         `)
       ])
     ]),
-    cB('icon', `
-      transition: color .3s var(--n-bezier);
-      color: var(--n-icon-color);
-      font-size: var(--n-icon-size);
-    `),
+    c('>', [
+      cB('icon', `
+        transition: color .3s var(--n-bezier);
+        color: var(--n-icon-color);
+        font-size: var(--n-icon-size);
+      `)
+    ]),
     cB('base-icon', `
       font-size: var(--n-icon-size);
     `)
