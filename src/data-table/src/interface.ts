@@ -1,12 +1,13 @@
 import { TreeNode } from 'treemate'
 import { CSSProperties, Ref, VNodeChild, HTMLAttributes, Slots } from 'vue'
-import { EllipsisProps } from '../../ellipsis/src/Ellipsis'
-import { NLocale } from '../../locales'
-import { MergedTheme } from '../../_mixins'
-import { DataTableTheme } from '../styles'
+import type { ScrollTo } from '../../scrollbar/src/Scrollbar'
+import type { EllipsisProps } from '../../ellipsis/src/Ellipsis'
+import type { NLocale } from '../../locales'
+import type { MergedTheme } from '../../_mixins'
+import { createInjectionKey } from '../../_utils'
+import type { DataTableTheme } from '../styles'
 import type { RowItem, ColItem } from './use-group-header'
 import type { DataTableSelectionOption } from './TableParts/SelectionMenu'
-import { createInjectionKey } from '../../_utils'
 
 export type FilterOptionValue = string | number
 export type ColumnKey = string | number
@@ -282,10 +283,12 @@ export interface FilterState {
 export interface MainTableRef {
   getHeaderElement: () => HTMLElement | null
   getBodyElement: () => HTMLElement | null
+  scrollTo: ScrollTo
 }
 
 export interface MainTableBodyRef {
   getScrollContainer: () => HTMLElement | null
+  scrollTo: ScrollTo
 }
 
 export interface MainTableHeaderRef {
@@ -308,6 +311,7 @@ export interface DataTableInst {
   clearSorter: () => void
   page: (page: number) => void
   sort: (columnKey: ColumnKey, order: SortOrder) => void
+  scrollTo: ScrollTo
   /** @deprecated it but just leave it here, it does no harm */
   clearFilter: () => void
 }
