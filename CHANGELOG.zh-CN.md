@@ -11,10 +11,20 @@
 - 修复 `n-date-picker` 在设定了 `is-date-disabled` 后年月的快速跳转可能会被禁用，关闭 [#3068](https://github.com/TuSimple/naive-ui/issues/3068)
 - 修复 `n-layout` 在 `keep-alive` 中使用的时候不会维持滚动状态
 - 修复 `n-layout-sider` 在 `keep-alive` 中使用的时候不会维持滚动状态
+- 修复 `n-tree` 可能重复发送异步数据请求
+- 修复 `n-tree` 在设定 `expand-on-click` 之后异步展开报错，关闭 [#3089](https://github.com/TuSimple/naive-ui/issues/3089)
+- 修复 `n-slider` 使用键盘聚焦触发 toolip 的时候没有动画
+- 修复 `n-slider` 在 mark 出现在最右侧的时候换行不正常
+- 修复 `n-upload` 内部的链接会出现原生 focus-visible 的 outline 样式
+- 修复 `n-upload` 在 `list-type="image-card"` 时会出现 slot 相关 warning
+- 修复 `n-upload` 在 `list-type="image-card"` 图片的边角会溢出列表项
 
 ### Feats
 
 - 🌟 `n-pagination` 新增快速跳转的下拉菜单
+- 🌟 `n-input` 新增 `allow-input` 属性
+- 🌟 `n-data-table` 新增 `default-expand-all` 属性，关闭 [#3073](https://github.com/TuSimple/naive-ui/issues/3073)
+- 🌟 `n-modal` 在内部带有弹出层组件例如 `n-select` 的时候可以正确处理 esc 键按下的情况，关闭 [#2973](https://github.com/TuSimple/naive-ui/issues/2973)
 - `n-tree-select` 新增 `arrow` slot，关闭 [#3084](https://github.com/TuSimple/naive-ui/issues/3084)
 - `n-cascader` 在点击 checkbox 后会显示对应的子菜单，关闭 [#3079](https://github.com/TuSimple/naive-ui/issues/3079)
 - `n-upload` 在达到最大文件数量限制后会禁用 dragger
@@ -22,7 +32,7 @@
 - `n-popselect` 新增 `node-props` 属性
 - `n-popselect` 新增 `virtual-scroll` 属性
 - `n-data-table` 新增 `scrollTo` 方法，关闭 [#2570](https://github.com/TuSimple/naive-ui/issues/2570)
-- `n-input` 新增 `trim` 属性
+- `n-slider` 新增 `thumb` 插槽
 
 ## 2.30.3
 
