@@ -29,6 +29,10 @@
 - `n-popover` adds `footer-style` prop.
 - `n-popover` adds `footer` slot, closes [#3188](https://github.com/TuSimple/naive-ui/issues/3188).
 - `n-dropdown` adds `menu-props` prop.
+- `n-data-table` adds `multiple` prop, closes [#3056](https://github.com/TuSimple/naive-ui/issues/3056).
+- `n-date-picker` would disable confirm button if end date is not selected, closes [#3226](https://github.com/TuSimple/naive-ui/issues/3226).
+- `n-tree` adds `check-on-click` prop to control `checked` status, closes [#2968](https://github.com/TuSimple/naive-ui/issues/2968).
+- `n-tree` adds `accrodion` prop, closes [#3129](https://github.com/TuSimple/naive-ui/issues/3129).
 
 ## 2.30.8
 
