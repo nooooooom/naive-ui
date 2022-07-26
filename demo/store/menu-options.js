@@ -32,12 +32,6 @@ const appendCounts = (item) => {
   }
 }
 
-// const createDebugDemos = (item, mode) => {
-//   if (__DEV__ && mode === 'debug') {
-//     return [item]
-//   } else return []
-// }
-
 function createItems (lang, theme, prefix, items) {
   const isZh = lang === 'zh-CN'
   const langKey = isZh ? 'zh' : 'en'
@@ -159,11 +153,6 @@ export function createDocumentationMenuOptions ({ lang, theme, mode }) {
           zh: '社区精选资源',
           path: '/community'
         }
-        // {
-        //   en: 'Experimental Features',
-        //   zh: '试验性特性',
-        //   path: '/experimental-features'
-        // }
       ]
     },
     {
@@ -176,11 +165,6 @@ export function createDocumentationMenuOptions ({ lang, theme, mode }) {
           zh: '变更日志',
           path: '/changelog'
         }
-        // {
-        //   en: 'Migrate From V1',
-        //   zh: '从 V1 升级',
-        //   path: '/from-v1'
-        // }
       ]
     }
   ])
@@ -679,12 +663,6 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           path: '/layout'
         },
         {
-          en: 'Legacy Grid',
-          zh: '旧版栅格',
-          enSuffix: true,
-          path: '/legacy-grid'
-        },
-        {
           en: 'Grid',
           zh: '栅格',
           enSuffix: true,
@@ -745,6 +723,25 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           zh: '全局样式',
           enSuffix: true,
           path: '/global-style'
+        }
+      ]
+    }),
+    appendCounts({
+      zh: '废弃的组件',
+      en: 'Deprecated Components',
+      type: 'group',
+      children: [
+        {
+          en: 'Legacy Grid',
+          zh: '旧版栅格',
+          enSuffix: true,
+          path: '/legacy-grid'
+        },
+        {
+          en: 'Legacy Transfer',
+          zh: '旧版穿梭框',
+          enSuffix: true,
+          path: '/legacy-transfer'
         }
       ]
     })

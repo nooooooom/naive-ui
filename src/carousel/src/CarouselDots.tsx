@@ -2,8 +2,8 @@ import { h, defineComponent, ref, onBeforeUpdate } from 'vue'
 import type { PropType } from 'vue'
 import { indexMap } from 'seemly'
 import { useConfig } from '../../_mixins'
-import { useCarouselContext } from './CarouselContext'
 import type { ExtractPublicPropTypes } from '../../_utils'
+import { useCarouselContext } from './CarouselContext'
 
 const carouselDotsProps = {
   total: {
@@ -78,10 +78,10 @@ export default defineComponent({
       e.preventDefault()
       if (wantToNext && !NCarousel.isNextDisabled()) {
         NCarousel.next()
-        focusDot(NCarousel.getCurrentIndex())
+        focusDot(NCarousel.currentIndexRef.value)
       } else if (wantToPrev && !NCarousel.isPrevDisabled()) {
         NCarousel.prev()
-        focusDot(NCarousel.getCurrentIndex())
+        focusDot(NCarousel.currentIndexRef.value)
       }
     }
     function focusDot (index: number): void {

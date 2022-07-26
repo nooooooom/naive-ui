@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## NEXT_VERSION
+
+### Breaking Changes
+
+- `n-transfer` 的 UI 完全重构，原本的 transfer 组件被重命名为 `n-legacy-transfer`，并将在下个主版本被移除。
+
+### Fixes
+
+- `n-notification` 新增 `keepAliveOnHover` 属性，用于设置鼠标移入时是否保持通知框显示，关闭 [#3249](https://github.com/TuSimple/naive-ui/issues/3249)
+- 修复 `n-date-picker` 在范围模式下点击禁用的确认按钮会取消选择中的状态，关闭 [#3254](https://github.com/TuSimple/naive-ui/issues/3254)
+- 修复 `n-button` 的 `focusable` 属性不生效，关闭 [#3292](https://github.com/TuSimple/naive-ui/issues/3292)
+- 修复 `n-upload` 的 `on-error` 和 `on-finish` 属性不允许 `() => void` 类型，关闭 [#3290](https://github.com/TuSimple/naive-ui/issues/3290)
+- 修复 `n-select` 的 placeholder 过长时可能溢出
+- 修复 `n-input` 在 `type="textarea"` 并且 `:autosize="true"` 时添加 prefix 后内容没有对齐，关闭 [#3238](https://github.com/TuSimple/naive-ui/issues/3238)
+- 修复 `n-select` 当在同时设置 `filterable` 和 `multiple` 时点击 `action` 焦点丢失的问题，关闭 [#3247](https://github.com/TuSimple/naive-ui/issues/3247)
+- 修复 `n-carousel` 在 `autoplay` 为 `true` 时 `hover` 不停止播放，关闭 [#3304](https://github.com/TuSimple/naive-ui/issues/3304)
+- 修复 `n-tree` 在选中节点时设定 `expanded-keys` 时可能会抛出异常，关闭 [#3319](https://github.com/TuSimple/naive-ui/issues/3319)
+- 修复 `n-avatar` 加载失败时依然显示 placeholder，关闭 [#3315](https://github.com/TuSimple/naive-ui/issues/3315)
+- 修复 `n-input-number` 按住按钮时重复注册 `mouseup` 事件
+- 修复所有组件导出的 props 类型属性都是 `readonly` 的
+
+### Feats
+
+- `n-checkbox-group` 的 `on-update:value` 属性增加触发变更的 checkbox 的值到参数中，关闭 [#3277](https://github.com/TuSimple/naive-ui/issues/3277)
+- `n-tree` 支持 RTL
+- `n-input` 新增 `scrollTo` 方法，关闭 [#3280](https://github.com/TuSimple/naive-ui/issues/3280)
+- `n-legacy-grid` 支持 RTL
+- `n-statistic` 支持 RTL
+- `n-thing` 支持 RTL
+- `n-transfer` 新增 `render-source-label` 属性
+- `n-transfer` 新增 `render-target-label` 属性
+- `n-transfer` 新增 `render-source-list` 属性
+- `n-scrollbar` 支持 RTL
+
 ## 2.31.0
 
 ### Breaking Changes
@@ -49,7 +83,6 @@
 - `n-drawer` 新增 `default-width` 属性
 - `n-drawer` 新增 `on-update:height` 属性
 - `n-drawer` 新增 `on-update:width` 属性
-- `n-scrollbar` 支持 RTL
 - 更新 ukUA locale
 
 ## 2.30.8

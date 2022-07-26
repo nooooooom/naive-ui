@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## NEXT_VERSION
+
+### Breaking Changes
+
+- `n-transfer`'s UI is totally refactored. The original transfer component is renamed as `n-legacy-transfer` and will be removed in next major version.
+
+### Fixes
+
+- `n-notification` add `keepAliveOnHover` props to control whether the notification will be closed when mouse hover, closes [#3249](https://github.com/TuSimple/naive-ui/issues/3249).
+- Fix `n-date-picker` will cancel selecting in range mode if click at disabled confirm button, closes [#3254](https://github.com/TuSimple/naive-ui/issues/3254).
+- Fix `n-button`'s `focusable` prop doesn't work, closes [#3292](https://github.com/TuSimple/naive-ui/issues/3292).
+- Fix `n-upload`'s `on-error` & `on-finish` props don't allow `() => void` type, closes [#3290](https://github.com/TuSimple/naive-ui/issues/3290).
+- Fix `n-select`'s placeholder may overflow if it's long.
+- Fix `n-input` has is no indent at the prefix if `type="textarea"` and `:autosize="true"`, closes [#3238](https://github.com/TuSimple/naive-ui/issues/3238).
+- Fix `n-select` focus loss when click `action` slot in `filterable` and `multiple`, closes [#3247](https://github.com/TuSimple/naive-ui/issues/3247).
+- Fix `n-carousel`'s `autoplay` prop be `true` `hover` can't stop the play, closes [#3304](https://github.com/TuSimple/naive-ui/issues/3304).
+- Fix `n-tree` may throw error on node selection `expanded-keys`, closes [#3319](https://github.com/TuSimple/naive-ui/issues/3319).
+- Fix `n-avatar` shows placeholder after load fails, closes [#3315](https://github.com/TuSimple/naive-ui/issues/3315).
+- Fix `n-input-number` register `mouseup` event multiple times when hold on button.
+- Fix all components' exported props type's prop is `readonly`.
+
+### Feats
+
+- `n-checkbox-group`'s `on-update:value` prop adds trigger checkbox's value to params, closes [#3277](https://github.com/TuSimple/naive-ui/issues/3277).
+- `n-tree` supports RTL.
+- `n-input` adds `scrollTo` method, closes [#3280](https://github.com/TuSimple/naive-ui/issues/3280).
+- `n-legacy-grid` supports RTL.
+- `n-statistic` supports RTL.
+- `n-thing` supports RTL.
+- `n-transfer` add `render-source-label` prop.
+- `n-transfer` add `render-target-label` prop.
+- `n-transfer` add `render-source-list` prop.
+- `n-scrollbar` supports RTL.
+
 ## 2.31.0
 
 ### Breaking Changes
@@ -49,7 +83,6 @@
 - `n-drawer` adds `default-height` prop.
 - `n-drawer` adds `on-update:width` prop.
 - `n-drawer` adds `on-update:height` prop.
-- `n-scrollbar` supports RTL.
 - Update ukUA locale.
 
 ## 2.30.8
