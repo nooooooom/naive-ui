@@ -44,7 +44,6 @@ export default defineComponent({
   props: countdownProps,
   setup (props) {
     let timerId: number | null = null
-    let rafId: number | null = null
     let elapsed = 0
     let finished = false
 
@@ -101,8 +100,8 @@ export default defineComponent({
         distanceRef.value = 0
         stopTimer()
         if (!finished) {
-          props.onFinish?.()
           finished = true
+          props.onFinish?.()
         }
         return
       }
@@ -128,10 +127,6 @@ export default defineComponent({
       if (timerId !== null) {
         window.clearTimeout(timerId)
         timerId = null
-      }
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId)
-        rafId = null
       }
     }
     onMounted(() => {

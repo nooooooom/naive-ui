@@ -47,6 +47,7 @@ download.vue
 | method | `string` | `'POST'` | The HTTP request method. |  |
 | multiple | `boolean` | `false` | Allow multiple files to be selected. |  |
 | name | `string` | `'file'` | The field name for the file(s) in the HTTP request's form data. |  |
+| response-type | `'' \| 'arraybuffer' \| 'blob' \| 'document' \| 'json' \| 'text'` | `''` | Response type of `XMLHttpRequest` used by `n-upload` | 2.33.3 |
 | show-cancel-button | `boolean` | `true` | Show a cancel button (while uploading). Use the `on-remove` callback for this event. |  |
 | show-download-button | `boolean` | `false` | Show a download button (after upload is finished). |  |
 | show-file-list | `boolean` | `true` | Show a file list. |  |
@@ -69,7 +70,7 @@ download.vue
 
 | Property | Type | Description | Version |
 | --- | --- | --- | --- |
-| id | `string \| number` | Unique file ID. |  |
+| id | `string \| number` | Unique file ID. Please note that do not change it, if you need to save some corresponding data, you can use a Map object outside component. |  |
 | name | `string` | Filename. |  |
 | status | `'pending' \| 'uploading' \| 'error' \| 'finished' \| 'removed'` | The status of file. |  |
 | batchId? | `string \| null` | Batch id of uploaded file. The files selected in a same upload batch will have same `batchId`. | 2.28.3 |

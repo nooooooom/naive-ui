@@ -14,6 +14,7 @@ item-header-click.vue
 customize-icon.vue
 default-expanded.vue
 header-extra.vue
+disabled.vue
 ```
 
 ## API
@@ -32,24 +33,25 @@ header-extra.vue
 
 ### CollapseItem Props
 
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| display-directive | `'if' \| 'show'` | `undefined` | The display directive to use when it is rendering its content. `'if'` corresponds to `v-if` and `'show'` corresponds to `v-show`. When it is set to `undefined` the value will follow its outer `n-collapse`. |
-| name | `string \| number` | random string | Item identifier (should be unique). |
-| title | `string` | `undefined` | Title. |
+| Name | Type | Default | Description | Version |
+| --- | --- | --- | --- | --- |
+| disabled | `boolean` | `false` | Whether the item is disabled. | 2.32.2 |
+| display-directive | `'if' \| 'show'` | `undefined` | The display directive to use when it is rendering its content. `'if'` corresponds to `v-if` and `'show'` corresponds to `v-show`. When it is set to `undefined` the value will follow its outer `n-collapse`. |  |
+| name | `string \| number` | random string | Item identifier (should be unique). |  |
+| title | `string` | `undefined` | Title. |  |
 
 ### Collapse Slots
 
 | Name | Parameters | Description |
 | --- | --- | --- |
 | default | `()` | The contents of the collapsible panel. |
-| arrow | `(options: { collapsed: boolean })` | Custom icons for folding panels. |
+| arrow | `(props: { collapsed: boolean })` | Custom icons for folding panels. |
 
 ### CollapseItem Slots
 
 | Name | Parameters | Description |
 | --- | --- | --- |
 | default | `()` | The contents of the collapsible panel node. |
-| header | `()` | The content of the header of the collapsed panel node. |
-| header-extra | `()` | The extra content of the header of the collapsed panel node. |
-| arrow | `(options: { collapsed: boolean })` | The custom icon of the node header of the collapsible panel. |
+| header | `(props: { collapsed: boolean })` | The content of the header of the collapsed panel node. |
+| header-extra | `(props: { collapsed: boolean })` | The extra content of the header of the collapsed panel node. |
+| arrow | `(props: { collapsed: boolean })` | The custom icon of the node header of the collapsible panel. |

@@ -27,7 +27,8 @@ import {
   ColumnKey,
   SummaryRowData,
   MainTableBodyRef,
-  TmNode
+  TmNode,
+  RowData
 } from '../interface'
 import { createRowClassName, getColKey, isColumnSorting } from '../utils'
 import type { ColItem } from '../use-group-header'
@@ -147,6 +148,7 @@ export default defineComponent({
   setup (props) {
     const {
       slots: dataTableSlots,
+      bodyWidthRef,
       mergedExpandedRowKeysRef,
       mergedClsPrefixRef,
       mergedThemeRef,
@@ -178,6 +180,10 @@ export default defineComponent({
       loadingRef,
       onLoadRef,
       loadingKeySetRef,
+      expandableRef,
+      stickyExpandedRowsRef,
+      renderExpandIconRef,
+      summaryPlacementRef,
       setHeaderScrollLeft,
       doUpdateExpandedRowKeys,
       handleTableBodyScroll,
@@ -203,11 +209,18 @@ export default defineComponent({
     const mergedExpandedRowKeySetRef = computed(() => {
       return new Set(mergedExpandedRowKeysRef.value)
     })
+    function getRowInfo (key: RowKey): RowData {
+      const currentIndex = paginatedDataRef.value.findIndex(
+        (item) => item.key === key
+      )
+      return paginatedDataRef.value[currentIndex].rawNode
+    }
     function handleCheckboxUpdateChecked (
       tmNode: { key: RowKey },
       checked: boolean,
       shiftKey: boolean
     ): void {
+      const rowInfo = getRowInfo(tmNode.key)
       if (shiftKey) {
         const lastIndex = paginatedDataRef.value.findIndex(
           (item) => item.key === lastSelectedKey
@@ -225,25 +238,25 @@ export default defineComponent({
             }
           })
           if (checked) {
-            doCheck(rowKeysToCheck, false)
+            doCheck(rowKeysToCheck, false, rowInfo)
           } else {
-            doUncheck(rowKeysToCheck)
+            doUncheck(rowKeysToCheck, rowInfo)
           }
           lastSelectedKey = tmNode.key
           return
         }
       }
-
       if (checked) {
-        doCheck(tmNode.key, false)
+        doCheck(tmNode.key, false, rowInfo)
       } else {
-        doUncheck(tmNode.key)
+        doUncheck(tmNode.key, rowInfo)
       }
       lastSelectedKey = tmNode.key
     }
 
     function handleRadioUpdateChecked (tmNode: { key: RowKey }): void {
-      doCheck(tmNode.key, true)
+      const rowInfo = getRowInfo(tmNode.key)
+      doCheck(tmNode.key, true, rowInfo)
     }
 
     function getScrollContainer (): HTMLElement | null {
@@ -412,6 +425,8 @@ export default defineComponent({
       })
     })
     return {
+      bodyWidth: bodyWidthRef,
+      summaryPlacement: summaryPlacementRef,
       dataTableSlots,
       componentId,
       scrollbarInstRef,
@@ -471,6 +486,9 @@ export default defineComponent({
       rowProps: rowPropsRef,
       maxHeight: maxHeightRef,
       loadingKeySet: loadingKeySetRef,
+      expandable: expandableRef,
+      stickyExpandedRows: stickyExpandedRowsRef,
+      renderExpandIcon: renderExpandIconRef,
       setHeaderScrollLeft,
       handleMouseenterTable,
       handleVirtualListScroll,
@@ -548,8 +566,10 @@ export default defineComponent({
               rowClassName,
               mergedSortState,
               mergedExpandedRowKeySet,
+              stickyExpandedRows,
               componentId,
               childTriggerColIndex,
+              expandable,
               rowProps,
               handleMouseenterTable,
               handleMouseleaveTable,
@@ -574,31 +594,33 @@ export default defineComponent({
             if (summary) {
               const summaryRows = summary(this.rawPaginatedData)
               if (Array.isArray(summaryRows)) {
-                mergedData = [
-                  ...mergedPaginationData,
-                  ...summaryRows.map((row, i) => ({
-                    isSummaryRow: true as const,
-                    key: `__n_summary__${i}`,
-                    tmNode: {
-                      rawNode: row,
-                      disabled: true
-                    },
-                    index: -1
-                  }))
-                ]
+                const summaryRowData = summaryRows.map((row, i) => ({
+                  isSummaryRow: true as const,
+                  key: `__n_summary__${i}`,
+                  tmNode: {
+                    rawNode: row,
+                    disabled: true
+                  },
+                  index: -1
+                }))
+                mergedData =
+                  this.summaryPlacement === 'top'
+                    ? [...summaryRowData, ...mergedPaginationData]
+                    : [...mergedPaginationData, ...summaryRowData]
               } else {
-                mergedData = [
-                  ...mergedPaginationData,
-                  {
-                    isSummaryRow: true,
-                    key: '__n_summary__',
-                    tmNode: {
-                      rawNode: summaryRows,
-                      disabled: true
-                    },
-                    index: -1
-                  }
-                ]
+                const summaryRowData = {
+                  isSummaryRow: true as const,
+                  key: '__n_summary__',
+                  tmNode: {
+                    rawNode: summaryRows,
+                    disabled: true
+                  },
+                  index: -1
+                }
+                mergedData =
+                  this.summaryPlacement === 'top'
+                    ? [summaryRowData, ...mergedPaginationData]
+                    : [...mergedPaginationData, summaryRowData]
               }
             } else {
               mergedData = mergedPaginationData
@@ -611,7 +633,11 @@ export default defineComponent({
             // Tile the data of the expanded row
             const displayedData: RowRenderInfo[] = []
             mergedData.forEach((rowInfo) => {
-              if (renderExpand && mergedExpandedRowKeySet.has(rowInfo.key)) {
+              if (
+                renderExpand &&
+                mergedExpandedRowKeySet.has(rowInfo.key) &&
+                (!expandable || expandable(rowInfo.tmNode.rawNode))
+              ) {
                 displayedData.push(rowInfo, {
                   isExpandedRow: true,
                   key: `${rowInfo.key}-expand`, // solve key repeat of the expanded row
@@ -629,6 +655,10 @@ export default defineComponent({
             paginatedData.forEach(({ tmNode }, rowIndex) => {
               rowIndexToKey[rowIndex] = tmNode.key
             })
+
+            const bodyWidth = stickyExpandedRows ? this.bodyWidth : null
+            const bodyWidthPx =
+              bodyWidth === null ? undefined : `${bodyWidth}px`
 
             const renderRow = (
               rowInfo: RowRenderInfo,
@@ -654,7 +684,18 @@ export default defineComponent({
                       ]}
                       colspan={colCount}
                     >
-                      {renderExpand!(rawNode, actualRowIndex)}
+                      {stickyExpandedRows ? (
+                        <div
+                          class={`${mergedClsPrefix}-data-table-expand`}
+                          style={{
+                            width: bodyWidthPx
+                          }}
+                        >
+                          {renderExpand!(rawNode, actualRowIndex)}
+                        </div>
+                      ) : (
+                        renderExpand!(rawNode, actualRowIndex)
+                      )}
                     </td>
                   </tr>
                 )
@@ -783,16 +824,14 @@ export default defineComponent({
                             `${mergedClsPrefix}-data-table-td--fixed-${column.fixed}`,
                           column.align &&
                             `${mergedClsPrefix}-data-table-td--${column.align}-align`,
-                          {
-                            [`${mergedClsPrefix}-data-table-td--selection`]:
-                              column.type === 'selection',
-                            [`${mergedClsPrefix}-data-table-td--expand`]:
-                              column.type === 'expand',
-                            [`${mergedClsPrefix}-data-table-td--last-col`]:
-                              isLastCol,
-                            [`${mergedClsPrefix}-data-table-td--last-row`]:
-                              isLastRow
-                          }
+                          column.type === 'selection' &&
+                            `${mergedClsPrefix}-data-table-td--selection`,
+                          column.type === 'expand' &&
+                            `${mergedClsPrefix}-data-table-td--expand`,
+                          isLastCol &&
+                            `${mergedClsPrefix}-data-table-td--last-col`,
+                          isLastRow &&
+                            `${mergedClsPrefix}-data-table-td--last-row`
                         ]}
                       >
                         {hasChildren && colIndex === childTriggerColIndex
@@ -813,6 +852,7 @@ export default defineComponent({
                                   class={`${mergedClsPrefix}-data-table-expand-trigger`}
                                   clsPrefix={mergedClsPrefix}
                                   expanded={expanded}
+                                  renderExpandIcon={this.renderExpandIcon}
                                   loading={loadingKeySet.has(rowInfo.key)}
                                   onClick={() => {
                                     handleUpdateExpanded(rowKey, rowInfo.tmNode)
@@ -854,6 +894,7 @@ export default defineComponent({
                               <ExpandTrigger
                                 clsPrefix={mergedClsPrefix}
                                 expanded={expanded}
+                                renderExpandIcon={this.renderExpandIcon}
                                 onClick={() =>
                                   handleUpdateExpanded(rowKey, null)
                                 }

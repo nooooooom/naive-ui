@@ -41,8 +41,9 @@ const self = (vars: ThemeCommonVars) => {
     boxShadowDisabled: `inset 0 0 0 1px ${borderColor}`,
     color: baseColor,
     colorDisabled: inputColorDisabled,
+    colorActive: '#0000',
     textColor: textColor2,
-    textColorDisabled: textColorDisabled,
+    textColorDisabled,
     dotColorActive: primaryColor,
     dotColorDisabled: borderColor,
     buttonBorderColor: borderColor,
@@ -53,7 +54,7 @@ const self = (vars: ThemeCommonVars) => {
     buttonTextColor: textColor2,
     buttonTextColorActive: primaryColor,
     buttonTextColorHover: primaryColor,
-    opacityDisabled: opacityDisabled,
+    opacityDisabled,
     buttonBoxShadowFocus: `inset 0 0 0 1px ${primaryColor}, 0 0 0 2px ${changeColor(
       primaryColor,
       { alpha: 0.3 }

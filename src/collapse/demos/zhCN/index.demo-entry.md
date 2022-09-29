@@ -14,6 +14,7 @@ item-header-click.vue
 customize-icon.vue
 default-expanded.vue
 header-extra.vue
+disabled.vue
 rtl-debug.vue
 ```
 
@@ -33,24 +34,25 @@ rtl-debug.vue
 
 ### CollapseItem Props
 
-| 名称 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| display-directive | `'if' \| 'show'` | `undefined` | 自身在控制内容是否渲染时使用的指令，`'if'` 对应 `v-if`，`'show'` 对应 `v-show`。在设定为 `undefined` 的时候跟随外层的 `n-collapse` |
-| name | `string \| number` | 随机字符串 | 名称 |
-| title | `string` | `undefined` | 标题 |
+| 名称 | 类型 | 默认值 | 说明 | 版本 |
+| --- | --- | --- | --- | --- |
+| disabled | `boolean` | `false` | 是否禁用展开 | 2.32.2 |
+| display-directive | `'if' \| 'show'` | `undefined` | 自身在控制内容是否渲染时使用的指令，`'if'` 对应 `v-if`，`'show'` 对应 `v-show`。在设定为 `undefined` 的时候跟随外层的 `n-collapse` |  |
+| name | `string \| number` | 随机字符串 | 名称 |  |
+| title | `string` | `undefined` | 标题 |  |
 
 ### Collapse Slots
 
-| 名称    | 参数                                | 说明                 |
-| ------- | ----------------------------------- | -------------------- |
-| default | `()`                                | 折叠面板的内容       |
-| arrow   | `(options: { collapsed: boolean })` | 折叠面板的自定义图标 |
+| 名称    | 参数                              | 说明                 |
+| ------- | --------------------------------- | -------------------- |
+| default | `()`                              | 折叠面板的内容       |
+| arrow   | `(props: { collapsed: boolean })` | 折叠面板的自定义图标 |
 
 ### CollapseItem Slots
 
 | 名称 | 参数 | 说明 |
 | --- | --- | --- |
 | default | `()` | 折叠面板节点的内容 |
-| header | `()` | 折叠面板节点头部的内容 |
-| header-extra | `()` | 折叠面板节点头部的额外内容 |
-| arrow | `(options: { collapsed: boolean })` | 折叠面板节点头部的自定义图标 |
+| header | `(props: { collapsed: boolean })` | 折叠面板节点头部的内容 |
+| header-extra | `(props: { collapsed: boolean })` | 折叠面板节点头部的额外内容 |
+| arrow | `(props: { collapsed: boolean })` | 折叠面板节点头部的自定义图标 |

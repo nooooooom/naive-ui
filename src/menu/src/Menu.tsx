@@ -20,10 +20,9 @@ import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { call } from '../../_utils'
 import type { MaybeArray } from '../../_utils'
-import { itemRenderer } from './utils'
+import { isIgnoredNode, itemRenderer } from './utils'
 import { menuLight } from '../styles'
 import type { MenuTheme } from '../styles'
-import style from './styles/index.cssr'
 import {
   MenuOption,
   MenuGroupOption,
@@ -38,6 +37,7 @@ import {
 } from './interface'
 import { useCheckDeprecated } from './useCheckDeprecated'
 import { menuInjectionKey } from './context'
+import style from './styles/index.cssr'
 
 export const menuProps = {
   ...(useTheme.props as ThemeProps<MenuTheme>),
@@ -78,6 +78,10 @@ export const menuProps = {
     type: String,
     default: 'children'
   },
+  disabledField: {
+    type: String,
+    default: 'disabled'
+  },
   defaultExpandAll: Boolean,
   defaultExpandedKeys: Array as PropType<Key[]>,
   expandedKeys: Array as PropType<Key[]>,
@@ -95,6 +99,10 @@ export const menuProps = {
     default: undefined
   },
   disabled: Boolean,
+  show: {
+    type: Boolean,
+    defalut: true
+  },
   inverted: Boolean,
   'onUpdate:expandedKeys': [Function, Array] as PropType<
   MaybeArray<OnUpdateKeys>
@@ -164,12 +172,18 @@ export default defineComponent({
     })
 
     const treeMateRef = computed(() => {
-      const { keyField, childrenField } = props
+      const { keyField, childrenField, disabledField } = props
       return createTreeMate<MenuOption, MenuGroupOption, MenuIgnoredOption>(
         props.items || props.options,
         {
+          getIgnored (node) {
+            return isIgnoredNode(node)
+          },
           getChildren (node) {
             return node[childrenField]
+          },
+          getDisabled (node) {
+            return (node as any)[disabledField]
           },
           getKey (node) {
             return (node[keyField] as Key) ?? node.name

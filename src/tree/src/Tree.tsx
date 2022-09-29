@@ -35,7 +35,7 @@ import type { ScrollbarInst } from '../../_internal'
 import { treeLight } from '../styles'
 import type { TreeTheme } from '../styles'
 import NTreeNode from './TreeNode'
-import { keysWithFilter, emptyImage, filterTree } from './utils'
+import { keysWithFilter, emptyImage, filterTree, isNodeDisabled } from './utils'
 import { useKeyboard } from './keyboard'
 import type {
   TreeDragInfo,
@@ -55,7 +55,8 @@ import type {
   RenderSuffix,
   RenderSwitcherIcon,
   TreeNodeProps,
-  CheckOnClick
+  CheckOnClick,
+  TreeInst
 } from './interface'
 import { treeInjectionKey } from './interface'
 import MotionWrapper from './MotionWrapper'
@@ -71,7 +72,8 @@ const ITEM_SIZE = 30 // 24 + 3 + 3
 
 export function createTreeMateOptions<T> (
   keyField: string,
-  childrenField: string
+  childrenField: string,
+  disabledField: string
 ): TreeMateOptions<T, T, T> {
   return {
     getIsGroup () {
@@ -84,7 +86,7 @@ export function createTreeMateOptions<T> (
       return (node as any)[childrenField]
     },
     getDisabled (node: T) {
-      return !!((node as any).disabled || (node as any).checkboxDisabled)
+      return !!((node as any)[disabledField] || (node as any).checkboxDisabled)
     }
   }
 }
@@ -115,6 +117,10 @@ export const treeSharedProps = {
   childrenField: {
     type: String,
     default: 'children'
+  },
+  disabledField: {
+    type: String,
+    default: 'disabled'
   },
   defaultExpandedKeys: {
     type: Array as PropType<Key[]>,
@@ -205,6 +211,10 @@ export const treeProps = {
   renderPrefix: Function as PropType<RenderPrefix>,
   renderSuffix: Function as PropType<RenderSuffix>,
   nodeProps: Function as PropType<TreeNodeProps>,
+  keyboard: {
+    type: Boolean,
+    default: true
+  },
   onDragenter: [Function, Array] as PropType<
   MaybeArray<(e: TreeDragInfo) => void>
   >,
@@ -329,7 +339,11 @@ export default defineComponent({
         props.showIrrelevantNodes
           ? props.data
           : filteredTreeInfoRef.value.filteredTree,
-        createTreeMateOptions(props.keyField, props.childrenField)
+        createTreeMateOptions(
+          props.keyField,
+          props.childrenField,
+          props.disabledField
+        )
       )
     )
     const treeSelectInjection = inject(treeSelectInjectionKey, null)
@@ -412,6 +426,7 @@ export default defineComponent({
     )
 
     const { pendingNodeKeyRef, handleKeydown } = useKeyboard({
+      props,
       mergedSelectedKeysRef,
       fNodesRef,
       mergedExpandedKeysRef,
@@ -481,10 +496,17 @@ export default defineComponent({
         deep: false
       }
     )
-    let memorizedExpandedKeys: Key[] | undefined
+    let expandAnimationDisabled = false
+    const disableExpandAnimationForOneTick = (): void => {
+      expandAnimationDisabled = true
+      void nextTick(() => {
+        expandAnimationDisabled = false
+      })
+    }
+    let memoizedExpandedKeys: Key[] | undefined
     watch(toRef(props, 'pattern'), (value, oldValue) => {
       if (props.showIrrelevantNodes) {
-        memorizedExpandedKeys = undefined
+        memoizedExpandedKeys = undefined
         if (value) {
           const { expandedKeys: expandedKeysAfterChange, highlightKeySet } =
             keysWithFilter(
@@ -495,6 +517,7 @@ export default defineComponent({
               mergedFilterRef.value
             )
           uncontrolledHighlightKeySetRef.value = highlightKeySet
+          disableExpandAnimationForOneTick()
           doUpdateExpandedKeys(
             expandedKeysAfterChange,
             getOptionsByKeys(expandedKeysAfterChange)
@@ -504,18 +527,20 @@ export default defineComponent({
         }
       } else {
         if (!value.length) {
-          if (memorizedExpandedKeys !== undefined) {
+          if (memoizedExpandedKeys !== undefined) {
+            disableExpandAnimationForOneTick()
             doUpdateExpandedKeys(
-              memorizedExpandedKeys,
-              getOptionsByKeys(memorizedExpandedKeys)
+              memoizedExpandedKeys,
+              getOptionsByKeys(memoizedExpandedKeys)
             )
           }
         } else {
           if (!oldValue.length) {
-            memorizedExpandedKeys = mergedExpandedKeysRef.value
+            memoizedExpandedKeys = mergedExpandedKeysRef.value
           }
           const { expandedKeys } = filteredTreeInfoRef.value
           if (expandedKeys !== undefined) {
+            disableExpandAnimationForOneTick()
             doUpdateExpandedKeys(expandedKeys, getOptionsByKeys(expandedKeys))
           }
         }
@@ -541,7 +566,7 @@ export default defineComponent({
               loadingKeys.delete(node.key)
               resolve()
             })
-            .catch((loadError) => {
+            .catch((loadError: Error) => {
               console.error(loadError)
               resetDragExpandState()
             })
@@ -569,7 +594,7 @@ export default defineComponent({
     // fixable and need some changes in vueuc, I've no time so I just leave it
     // here. Maybe the bug won't be fixed during the life time of the project.
     watch(expandedNonLoadingKeysRef, (value, prevValue) => {
-      if (!props.animated) {
+      if (!props.animated || expandAnimationDisabled) {
         void nextTick(syncScrollbar)
         return
       }
@@ -807,7 +832,7 @@ export default defineComponent({
     }
     function handleCheck (node: TmNode, checked: boolean): void {
       // We don't guard for leaf only since we have done it in view layer
-      if (props.disabled || node.disabled) {
+      if (props.disabled || isNodeDisabled(node, props.disabledField)) {
         return
       }
       if (props.internalUnifySelectCheck && !props.multiple) {
@@ -947,12 +972,24 @@ export default defineComponent({
     // Dnd
     function handleDragEnter ({ event, node }: InternalDragInfo): void {
       // node should be a tmNode
-      if (!props.draggable || props.disabled || node.disabled) return
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
+        return
+      }
       handleDragOver({ event, node }, false)
       doDragEnter({ event, node: node.rawNode })
     }
     function handleDragLeave ({ event, node }: InternalDragInfo): void {
-      if (!props.draggable || props.disabled || node.disabled) return
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
+        return
+      }
       doDragLeave({ event, node: node.rawNode })
     }
     function handleDragLeaveTree (e: DragEvent): void {
@@ -962,11 +999,23 @@ export default defineComponent({
     // Dragend is ok, we don't need to add global listener to reset drag status
     function handleDragEnd ({ event, node }: InternalDragInfo): void {
       resetDndState()
-      if (!props.draggable || props.disabled || node.disabled) return
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
+        return
+      }
       doDragEnd({ event, node: node.rawNode })
     }
     function handleDragStart ({ event, node }: InternalDragInfo): void {
-      if (!props.draggable || props.disabled || node.disabled) return
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
+        return
+      }
       // Most of time, the image will block user's view
       emptyImage && event.dataTransfer?.setDragImage(emptyImage, 0, 0)
       dragStartX = event.clientX
@@ -977,7 +1026,13 @@ export default defineComponent({
       { event, node }: InternalDragInfo,
       emit: boolean = true
     ): void {
-      if (!props.draggable || props.disabled || node.disabled) return
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
+        return
+      }
       const { value: draggingNode } = draggingNodeRef
       if (!draggingNode) return
       const { allowDrop, indent } = props
@@ -1174,7 +1229,11 @@ export default defineComponent({
       droppingNodeRef.value = finalDropNode
     }
     function handleDrop ({ event, node, dropPosition }: InternalDropInfo): void {
-      if (!props.draggable || props.disabled || node.disabled) {
+      if (
+        !props.draggable ||
+        props.disabled ||
+        isNodeDisabled(node, props.disabledField)
+      ) {
         return
       }
       const { value: draggingNode } = draggingNodeRef
@@ -1292,6 +1351,7 @@ export default defineComponent({
       droppingOffsetLevelRef,
       fNodesRef,
       pendingNodeKeyRef,
+      disabledFieldRef: toRef(props, 'disabledField'),
       internalScrollableRef: toRef(props, 'internalScrollable'),
       internalCheckboxFocusableRef: toRef(props, 'internalCheckboxFocusable'),
       internalTreeSelect: props.internalTreeSelect,
@@ -1311,8 +1371,12 @@ export default defineComponent({
       handleSelect,
       handleCheck
     })
-    const exposedMethods: InternalTreeInst = {
-      handleKeydown
+    function scrollTo (options: { key: Key }): void {
+      virtualListInstRef.value?.scrollTo(options)
+    }
+    const exposedMethods: InternalTreeInst & TreeInst = {
+      handleKeydown,
+      scrollTo
     }
     const cssVarsRef = computed(() => {
       const {
@@ -1364,6 +1428,7 @@ export default defineComponent({
       handleAfterEnter,
       handleResize,
       handleKeydown: exposedMethods.handleKeydown,
+      scrollTo: exposedMethods.scrollTo,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
       onRender: themeClassHandle?.onRender
@@ -1503,8 +1568,8 @@ export default defineComponent({
             ? resolveSlot(this.$slots.empty, () => [
                 <NEmpty
                   class={`${mergedClsPrefix}-tree__empty`}
-                  theme={this.theme?.peers?.Empty}
-                  themeOverrides={this.themeOverrides?.peers?.Empty}
+                  theme={this.mergedTheme.peers.Empty}
+                  themeOverrides={this.mergedTheme.peerOverrides.Empty}
                 />
             ])
             : fNodes.map(createNode)}

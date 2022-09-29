@@ -18,7 +18,6 @@ i18n.vue
 top.vue
 left.vue
 item-only.vue
-render-feedback.vue
 async.vue
 disabled.vue
 show-label.vue
@@ -55,7 +54,7 @@ dynamic.vue
 
 | Property | Type | Description | Version |
 | --- | --- | --- | --- |
-| asyncValidator | `(rule: FormItemRule, value: any, callback: boolean => void) => void` | Asynchronous validation in the form of a callback. |  |
+| asyncValidator | `(rule: FormItemRule, value: any, callback: (error?: Error) => void) => void` | Asynchronous validation in the form of a callback. |  |
 | message | `string` | Text to show when validation fails. |  |
 | renderMessage | `() => VNodeChild` | Render function or message. | 2.29.1 |
 | required | `boolean` | Is it required. |  |
@@ -73,7 +72,6 @@ dynamic.vue
 | Name | Type | Default | Description | Version |
 | --- | --- | --- | --- | --- |
 | feedback | `string` | `undefined` | The feedback message of the form item. If set, it will replace any result of rule-based validation. |  |
-| render-feedback | `(raw: string \| undefined) => string \| VNode` | `undefined` | custom render of feedback |  |
 | first | `boolean` | `false` | Whether to only show the first validation error message. |  |
 | ignore-path-change | `boolean` | `false` | Usually, changing `path` will cause a re-render and naive-ui will clear the validation result. Setting `ignore-path-change` to `true` will disable that behavior. |  |
 | label | `string` | `undefined` | Label. |  |

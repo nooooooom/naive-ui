@@ -115,6 +115,7 @@ export interface TreeInjection {
   checkboxPlacementRef: 'left' | 'right'
   internalTreeSelect: boolean
   checkOnClickRef: Ref<boolean | CheckOnClick>
+  disabledFieldRef: Ref<string>
   handleSwitcherClick: (node: TreeNode<TreeOption>) => void
   handleSelect: (node: TreeNode<TreeOption>) => void
   handleCheck: (node: TreeNode<TreeOption>, checked: boolean) => void
@@ -139,4 +140,8 @@ export interface MotionData {
 
 export interface InternalTreeInst {
   handleKeydown: (e: KeyboardEvent) => void
+}
+
+export interface TreeInst {
+  scrollTo: (options: { key: Key }) => void
 }
