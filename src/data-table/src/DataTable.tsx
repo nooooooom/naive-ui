@@ -108,7 +108,7 @@ export default defineComponent({
       childTriggerColIndexRef,
       doUpdatePage,
       doUpdateFilters,
-      onResizeColumn,
+      onUnstableColumnResize,
       deriveNextSorter,
       filter,
       filters,
@@ -176,6 +176,7 @@ export default defineComponent({
     })
     provide(dataTableInjectionKey, {
       props,
+      treeMateRef,
       renderExpandIconRef: toRef(props, 'renderExpandIcon'),
       loadingKeySetRef: ref(new Set<RowKey>()),
       slots,
@@ -246,7 +247,7 @@ export default defineComponent({
       doUpdatePage,
       doUpdateFilters,
       getResizableWidth,
-      onResizeColumn,
+      onUnstableColumnResize,
       clearResizableWidth,
       doUpdateResizableWidth,
       deriveNextSorter,

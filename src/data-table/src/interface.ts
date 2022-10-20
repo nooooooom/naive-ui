@@ -1,4 +1,4 @@
-import { TreeNode } from 'treemate'
+import { TreeMate, TreeNode } from 'treemate'
 import {
   CSSProperties,
   Ref,
@@ -21,11 +21,12 @@ import type { RowItem, ColItem } from './use-group-header'
 
 export const dataTableProps = {
   ...(useTheme.props as ThemeProps<DataTableTheme>),
-  onResizeColumn: Function as PropType<
+  onUnstableColumnResize: Function as PropType<
   (
     resizedWidth: number,
     limitedWidth: number,
-    column: TableBaseColumn
+    column: TableBaseColumn,
+    getColumnWidth: (key: ColumnKey) => number | undefined
   ) => void
   >,
   pagination: {
@@ -386,13 +387,15 @@ export interface DataTableInjection {
   stickyExpandedRowsRef: Ref<boolean>
   renderExpandIconRef: Ref<undefined | (() => VNodeChild)>
   summaryPlacementRef: Ref<'top' | 'bottom'>
+  treeMateRef: Ref<TreeMate<InternalRowData, InternalRowData, InternalRowData>>
   doUpdatePage: (page: number) => void
   doUpdateExpandedRowKeys: (keys: RowKey[]) => void
   doUpdateFilters: (filters: FilterState, sourceColumn: TableBaseColumn) => void
-  onResizeColumn: (
+  onUnstableColumnResize: (
     resizedWidth: number,
     limitedWidth: number,
-    column: TableBaseColumn
+    column: TableBaseColumn,
+    getColumnWidth: (key: ColumnKey) => number | undefined
   ) => void
   getResizableWidth: (key: ColumnKey) => number | undefined
   clearResizableWidth: () => void
@@ -440,7 +443,11 @@ export type RenderFilterMenu = (actions: { hide: () => void }) => VNodeChild
 export type OnUpdateExpandedRowKeys = (keys: RowKey[]) => void
 export type OnUpdateCheckedRowKeys = (
   keys: RowKey[],
-  row: InternalRowData[]
+  rows: InternalRowData[],
+  meta: {
+    row: InternalRowData | undefined
+    action: 'check' | 'uncheck' | 'checkAll' | 'uncheckAll'
+  }
 ) => void
 
 // `null` only occurs when clearSorter is called
