@@ -1,9 +1,9 @@
-import { h, defineComponent, PropType, ref, watchEffect } from 'vue'
+import { h, defineComponent, type PropType, ref, watchEffect } from 'vue'
 import { onFontsReady } from 'vooks'
 import { useConfig, useTheme } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
-import { ExtractPublicPropTypes, isBrowser, warnOnce } from '../../_utils'
-import { watermarkLight, WatermarkTheme } from '../styles'
+import { type ExtractPublicPropTypes, isBrowser, warnOnce } from '../../_utils'
+import { watermarkLight, type WatermarkTheme } from '../styles'
 import style from './styles/index.cssr'
 
 function getRatio (context: any): number {
@@ -57,6 +57,10 @@ export const watermarkProps = {
   rotate: {
     type: Number,
     default: 0
+  },
+  align: {
+    type: String as PropType<'left' | 'center' | 'right'>,
+    default: 'center'
   },
   image: String,
   imageOpacity: { type: Number, default: 1 },
@@ -197,11 +201,38 @@ export default defineComponent({
             fontFamily || themeRef.value.self.fontFamily
           }`
           ctx.fillStyle = fontColor
-          ctx.fillText(
-            content,
-            canvasOffsetLeft,
-            canvasOffsetTop + lineHeight * ratio
-          )
+
+          let maxWidth = 0
+          content
+            .split('\n')
+            .map((line) => {
+              const width = ctx.measureText(line).width
+              maxWidth = Math.max(maxWidth, width)
+              return {
+                width,
+                line
+              }
+            })
+            .forEach(({ line, width }, index) => {
+              const alignOffset =
+                props.align === 'left'
+                  ? 0
+                  : props.align === 'center'
+                    ? (maxWidth - width) / 2
+                    : maxWidth - width
+
+              ctx.fillText(
+                line,
+                canvasOffsetLeft + alignOffset,
+                canvasOffsetTop + lineHeight * ratio * (index + 1)
+              )
+            })
+          base64UrlRef.value = canvas.toDataURL()
+        } else if (!content) {
+          // For example, you are using the input box to customize the watermark
+          // content, but after clearing the input box, the content is empty,
+          // and the canvas content is empty. Clear canvas when content is empty
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
           base64UrlRef.value = canvas.toDataURL()
         }
       } else {
@@ -233,10 +264,10 @@ export default defineComponent({
                   : ''
                 : props.cross
                   ? `calc(${rotatedImageOffset} + ${
-                    props.width / 2
-                  }px) calc(${rotatedImageOffset} + ${
-                    props.height / 2
-                  }px), ${rotatedImageOffset} ${rotatedImageOffset}`
+                      props.width / 2
+                    }px) calc(${rotatedImageOffset} + ${
+                      props.height / 2
+                    }px), ${rotatedImageOffset} ${rotatedImageOffset}`
                   : rotatedImageOffset,
             backgroundImage: props.cross
               ? `url(${base64UrlRef.value}), url(${base64UrlRef.value})`

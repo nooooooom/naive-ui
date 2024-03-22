@@ -5,17 +5,17 @@ import {
   Transition,
   computed,
   provide,
-  PropType,
+  type PropType,
   watch,
   withDirectives,
-  ExtractPropTypes,
-  CSSProperties,
+  type ExtractPropTypes,
+  type CSSProperties,
   toRef,
-  Ref,
+  type Ref,
   watchEffect,
-  VNode
+  type VNode
 } from 'vue'
-import { VBinder, VTarget, VFollower, FollowerPlacement } from 'vueuc'
+import { VBinder, VTarget, VFollower, type FollowerPlacement } from 'vueuc'
 import { clickoutside } from 'vdirs'
 import { format, getTime, isValid } from 'date-fns/esm'
 import { useIsMounted, useMergedState } from 'vooks'
@@ -52,7 +52,7 @@ import {
   uniCalendarValidation,
   dualCalendarValidation
 } from './validation-utils'
-import { DatePickerType } from './config'
+import { type DatePickerType } from './config'
 import type {
   OnUpdateValue,
   OnUpdateValueImpl,
@@ -136,6 +136,9 @@ export const datePickerProps = {
   defaultCalendarStartTime: Number,
   defaultCalendarEndTime: Number,
   bindCalendarMonths: Boolean,
+  monthFormat: { type: String, default: 'M' },
+  yearFormat: { type: String, default: 'y' },
+  quarterFormat: { type: String, default: "'Q'Q" },
   'onUpdate:show': [Function, Array] as PropType<
   MaybeArray<(show: boolean) => void>
   >,
@@ -152,6 +155,10 @@ export const datePickerProps = {
   onUpdateValue: [Function, Array] as PropType<MaybeArray<OnUpdateValue>>,
   onFocus: [Function, Array] as PropType<(e: FocusEvent) => void>,
   onBlur: [Function, Array] as PropType<(e: FocusEvent) => void>,
+  onNextMonth: Function as PropType<() => void>,
+  onPrevMonth: Function as PropType<() => void>,
+  onNextYear: Function as PropType<() => void>,
+  onPrevYear: Function as PropType<() => void>,
   // deprecated
   onChange: [Function, Array] as PropType<MaybeArray<OnUpdateValue>>
 } as const
@@ -167,7 +174,7 @@ export default defineComponent({
       watchEffect(() => {
         if (props.onChange !== undefined) {
           warnOnce(
-            'data-picker',
+            'date-picker',
             '`on-change` is deprecated, please use `on-update:value` instead.'
           )
         }
@@ -214,6 +221,8 @@ export default defineComponent({
         case 'quarter':
         case 'quarterrange':
           return localeRef.value.quarterFormat
+        case 'week':
+          return localeRef.value.weekFormat
       }
     })
     const mergedValueFormatRef = computed(() => {
@@ -312,6 +321,8 @@ export default defineComponent({
             return localeRef.value.yearPlaceholder
           case 'quarter':
             return localeRef.value.quarterPlaceholder
+          case 'week':
+            return localeRef.value.weekPlaceholder
           default:
             return ''
         }
@@ -353,7 +364,8 @@ export default defineComponent({
       if (actions !== undefined) return actions
       const result = clearable ? ['clear'] : []
       switch (type) {
-        case 'date': {
+        case 'date':
+        case 'week': {
           result.push('now')
           return result
         }
@@ -389,7 +401,7 @@ export default defineComponent({
         }
         default: {
           warn(
-            'data-picker',
+            'date-picker',
             "The type is wrong, n-date-picker's type only supports `date`, `datetime`, `daterange` and `datetimerange`."
           )
           break
@@ -658,7 +670,10 @@ export default defineComponent({
         singleInputValueRef.value = v
       }
     }
-    function handleRangeUpdateValue (v: [string, string]): void {
+    function handleRangeUpdateValue (
+      v: [string, string],
+      { source }: { source: 0 | 1 | 'clear' }
+    ): void {
       if (v[0] === '' && v[1] === '') {
         // clear or just delete all the inputs
         doUpdateValue(null, { doConfirm: false })
@@ -681,7 +696,16 @@ export default defineComponent({
         dateFnsOptionsRef.value
       )
       if (isValid(newStartTime) && isValid(newEndTime)) {
-        doUpdateValue([getTime(newStartTime), getTime(newEndTime)], {
+        let newStartTs = getTime(newStartTime)
+        let newEndTs = getTime(newEndTime)
+        if (newEndTime < newStartTime) {
+          if (source === 0) {
+            newEndTs = newStartTs
+          } else {
+            newStartTs = newEndTs
+          }
+        }
+        doUpdateValue([newStartTs, newEndTs], {
           doConfirm: false
         })
         deriveInputState()
@@ -761,6 +785,9 @@ export default defineComponent({
       timePickerPropsRef: toRef(props, 'timePickerProps'),
       closeOnSelectRef: toRef(props, 'closeOnSelect'),
       updateValueOnCloseRef: toRef(props, 'updateValueOnClose'),
+      monthFormatRef: toRef(props, 'monthFormat'),
+      yearFormatRef: toRef(props, 'yearFormat'),
+      quarterFormatRef: toRef(props, 'quarterFormat'),
       ...uniVaidation,
       ...dualValidation,
       datePickerSlots: slots
@@ -966,7 +993,11 @@ export default defineComponent({
       triggerOnRender: triggerThemeClassHandle?.onRender,
       cssVars: inlineThemeDisabled ? undefined : cssVarsRef,
       themeClass: themeClassHandle?.themeClass,
-      onRender: themeClassHandle?.onRender
+      onRender: themeClassHandle?.onRender,
+      onNextMonth: props.onNextMonth,
+      onPrevMonth: props.onPrevMonth,
+      onNextYear: props.onNextYear,
+      onPrevYear: props.onPrevYear
     }
   },
   render () {
@@ -987,12 +1018,22 @@ export default defineComponent({
       defaultTime: this.defaultTime,
       themeClass: this.themeClass,
       panel: this.panel,
-      onRender: this.onRender
+      onRender: this.onRender,
+      onNextMonth: this.onNextMonth,
+      onPrevMonth: this.onPrevMonth,
+      onNextYear: this.onNextYear,
+      onPrevYear: this.onPrevYear,
+      timeFormat: this.timeFormat
     }
     const renderPanel = (): VNode => {
       const { type } = this
       return type === 'datetime' ? (
-        <DatetimePanel {...commonPanelProps}>{$slots}</DatetimePanel>
+        <DatetimePanel
+          {...commonPanelProps}
+          defaultCalendarStartTime={this.defaultCalendarStartTime}
+        >
+          {$slots}
+        </DatetimePanel>
       ) : type === 'daterange' ? (
         <DaterangePanel
           {...commonPanelProps}
@@ -1018,7 +1059,13 @@ export default defineComponent({
         type === 'quarterrange' ? (
         <MonthRangePanel {...commonPanelProps} type={type} />
           ) : (
-        <DatePanel {...commonPanelProps}>{$slots}</DatePanel>
+        <DatePanel
+          {...commonPanelProps}
+          type={type}
+          defaultCalendarStartTime={this.defaultCalendarStartTime}
+        >
+          {$slots}
+        </DatePanel>
           )
     }
     if (this.panel) {

@@ -13,7 +13,7 @@ DataTable is used to displays rows of structured data.
       In non-async mode, page count is determined by data's count. Even if you pass a <n-text code>page-count</n-text> in, it won't change data table's displayed page count. If you want it behaves in this way, you should set <n-text code>remote</n-text> prop.
     </li>
     <li>
-      If you want to use the data returned by the server for display, paging, filtering, sorting, please refer to <n-a href="#ajax-usage.vue">Async</n-a>.
+      If you want to use the data returned by the server for display, paging, filtering, sorting, please refer to <n-a href="#ajax-usage">Async</n-a>.
     </li>
   </n-ul>
 </n-alert>
@@ -58,6 +58,7 @@ switchable-editable
 context-menu.vue
 async-expand.vue
 render-cell.vue
+export-csv.vue
 ```
 
 ## API
@@ -88,15 +89,16 @@ render-cell.vue
 | pagination | `false \| object` | `false` | See [Pagination props](pagination#Pagination-Props) |  |
 | remote | `boolean` | `false` | If data-table do automatic paging. You may set it to `true` in async usage. |  |
 | render-cell | `(value: any, rowData: object, column: DataTableBaseColumn) => VNodeChild` | `undefined` | Render function of cell, it will be overwritten by columns' `render`. | 2.30.5 |
-| render-expand-icon | `() => VNodeChild` | `undefined` | Render function of expand icon. | 2.32.2 |
+| render-expand-icon | `({ expanded }: { expanded: boolean }) => VNodeChild` | `undefined` | Render function of expand icon. | 2.32.2, `expanded`: 2.34.4 |
 | row-class-name | `string \| (rowData: object, rowIndex : number) => string` | `undefined` | Class name of each row. |  |
 | row-key | `(rowData: object) => (number \| string)` | `undefined` | Generate the key of the row by row data (if you don't want to set the key). |  |
 | row-props | `(rowData: object, rowIndex : number) => object` | `undefined` | Customize row attributes. |  |
 | scroll-x | `number \| string` | `undefined` | If columns are horizontal fixed, scroll-x need to be set. |  |
+| scrollbar-props | `object` | `undefined` | See [Scrollbar props](scrollbar#Scrollbar-Props), the `on-scroll` attribute already exists in the `DataTable`, the `on-scroll` attribute does not take effect here. |  |
 | single-column | `boolean` | `false` | Whether rows are not divided. If the prop is `true`, table cell has no `border-bottom`. |  |
 | single-line | `boolean` | `true` | Whether columns are not divided. If the prop is `true`, table cell has no `border-right`. |  |
 | size | `'small' \| 'medium' \| 'large'` | `'medium'` | Table size. |  |
-| spin-props | `{ strokeWidth?: number, stroke?: string }` | `undefined` | Table spin's props. | NEXT_VERSION |
+| spin-props | `{ strokeWidth?: number, stroke?: string }` | `undefined` | Table spin's props. | 2.34.0 |
 | sticky-expanded-rows | `boolean` | `false` | Expanded row content remains sticky. | 2.32.2 |
 | striped | `boolean` | `false` | Whether to show zebra stripes on rows. |  |
 | summary | `DataTableCreateSummary` | `undefined` | Data of table summary row. For types, see <n-a href="#DataTableCreateSummary-Type">DataTableCreateSummary Type</n-a>. |  |
@@ -117,6 +119,7 @@ render-cell.vue
 | Name | Type | Default | Description | Version |
 | --- | --- | --- | --- | --- |
 | align | `'left' \| 'right' \| 'center'` | `'left'` | Text align in column. |  |
+| titleAlign | `'left' \| 'right' \| 'center'` | `null` | alignment of the table header. If omitted, the value of the above align attribute will be applied | 2.34.4 |
 | cellProps | `(rowData: object, rowIndex: number) => object` | `undefined` | HTML attributes of the column's cell. | 2.27.0 |
 | children | `DataTableColumn[]` | `undefined` | Child nodes of a grouped column. |  |
 | className | `string` | `undefined` | Class name of the column. |  |
@@ -126,6 +129,7 @@ render-cell.vue
 | defaultSortOrder | `'descend' \| 'ascend' \| false` | `false` | The default sort order of the table in uncontrolled manner. |  |
 | disabled | `(rowData: object, rowIndex: number) => boolean` | `() => false` | Whether the row is checkable. |  |
 | ellipsis | `boolean \| EllipsisProps` | `false` | Ellipsis options when content overflows. |  |
+| ellipsis-component | `'ellipsis' \| 'performant-ellipsis'` | `'ellipsis'` | Component for rendering text ellipsis. It works when `ellipsis` is `EllipsisProps`. If it's `'ellipsis'`, table will use regular `n-ellipsis` component to render text ellipsis. If it's `'performant-ellipsis'`, table will use `n-performant-ellipsis` to render text ellipsis. In the later situation, rendering speed will be much faster but component inside table cell would be unmounted & remounted. | 2.35.0 |
 | expandable | `(rowData: object) => boolean` | `undefined` | Whethe the row is expandable. Only works when `type` is `'expand'`. |  |
 | filter | `boolean \| (optionValue: string \| number, rowData: object) => boolean \| 'default'` | `false` | The filter of the column. If set to `true`, it will only display filter button on the column, which can be used in async status. |  |
 | filterMode | `'and' \| 'or'` | `'or'` | The filter mode. |  |
@@ -204,6 +208,7 @@ These methods can help you control table in an uncontrolled manner. However, it'
 | --- | --- | --- | --- |
 | clearFilters | `() => void` | Clear all filter state. |  |
 | clearSorter | `() => void` | Clear all sort state. |  |
+| downloadCsv | `(options?: { fileName?: string, keepOriginalData?: boolean }) => void` | Download CSV. | 2.37.0 |
 | filters | `(filters: DataTableFilterState \| null) => void` | Set the active filters of the table. |  |
 | page | `(page: number) => void` | Manually set the page. |  |
 | scrollTo | `(options: { left?: number, top?: number, behavior?: ScrollBehavior }): void & (x: number, y: number) => void` | Scroll content. | 2.30.4 |
@@ -211,7 +216,7 @@ These methods can help you control table in an uncontrolled manner. However, it'
 
 ### DataTable Slots
 
-| Name | Type | Description | Version |
-| --- | --- | --- | --- |
-| empty | `()` | Custom description when data of table is empty. |  |
-| loading | `()` | Custom description when data of table is loading. | NEXT_VERSION |
+| Name    | Type | Description                                       | Version |
+| ------- | ---- | ------------------------------------------------- | ------- |
+| empty   | `()` | Custom description when data of table is empty.   |         |
+| loading | `()` | Custom description when data of table is loading. | 2.34.0  |

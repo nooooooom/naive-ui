@@ -3,8 +3,9 @@ import {
   defineComponent,
   h,
   Transition,
-  PropType,
-  CSSProperties,
+  type PropType,
+  type CSSProperties,
+  ref,
   watchEffect
 } from 'vue'
 import { useCompitable } from 'vooks'
@@ -12,7 +13,7 @@ import { pxfy } from 'seemly'
 import { NBaseLoading } from '../../_internal'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
-import { createKey, ExtractPublicPropTypes, warnOnce } from '../../_utils'
+import { createKey, type ExtractPublicPropTypes, warnOnce } from '../../_utils'
 import { spinLight } from '../styles'
 import type { SpinTheme } from '../styles'
 import style from './styles/index.cssr'
@@ -25,6 +26,8 @@ const STROKE_WIDTH = {
 
 export const spinProps = {
   ...(useTheme.props as ThemeProps<SpinTheme>),
+  contentClass: String,
+  contentStyle: [Object, String] as PropType<CSSProperties | string>,
   description: String,
   stroke: String,
   size: {
@@ -46,7 +49,8 @@ export const spinProps = {
       return true
     },
     default: undefined
-  }
+  },
+  delay: Number
 }
 
 export type SpinProps = ExtractPublicPropTypes<typeof spinProps>
@@ -104,9 +108,30 @@ export default defineComponent({
         props
       )
       : undefined
+
+    const compitableShow = useCompitable(props, ['spinning', 'show'])
+    const activeRef = ref(false)
+
+    watchEffect((onCleanup) => {
+      let timerId: number
+      if (compitableShow.value) {
+        const { delay } = props
+        if (delay) {
+          timerId = window.setTimeout(() => {
+            activeRef.value = true
+          }, delay)
+          onCleanup(() => {
+            clearTimeout(timerId)
+          })
+          return
+        }
+      }
+      activeRef.value = compitableShow.value
+    })
+
     return {
       mergedClsPrefix: mergedClsPrefixRef,
-      compitableShow: useCompitable(props, ['spinning', 'show']),
+      active: activeRef,
       mergedStrokeWidth: computed(() => {
         const { strokeWidth } = props
         if (strokeWidth !== undefined) return strokeWidth
@@ -160,14 +185,16 @@ export default defineComponent({
         <div
           class={[
             `${mergedClsPrefix}-spin-content`,
-            this.compitableShow && `${mergedClsPrefix}-spin-content--spinning`
+            this.active && `${mergedClsPrefix}-spin-content--spinning`,
+            this.contentClass
           ]}
+          style={this.contentStyle}
         >
           {$slots}
         </div>
         <Transition name="fade-in-transition">
           {{
-            default: () => (this.compitableShow ? icon : null)
+            default: () => (this.active ? icon : null)
           }}
         </Transition>
       </div>

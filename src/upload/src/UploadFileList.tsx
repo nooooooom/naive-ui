@@ -1,4 +1,11 @@
-import { h, defineComponent, inject, VNode, CSSProperties, computed } from 'vue'
+import {
+  h,
+  defineComponent,
+  inject,
+  type VNode,
+  type CSSProperties,
+  computed
+} from 'vue'
 import { throwError } from '../../_utils'
 import { uploadInjectionKey } from './interface'
 import NUploadFile from './UploadFile'
@@ -22,6 +29,7 @@ export default defineComponent({
       mergedClsPrefixRef,
       listTypeRef,
       mergedFileListRef,
+      fileListClassRef,
       fileListStyleRef,
       cssVarsRef,
       themeClassRef,
@@ -35,11 +43,12 @@ export default defineComponent({
     )
 
     const renderFileList = (): VNode[] =>
-      mergedFileListRef.value.map((file) => (
+      mergedFileListRef.value.map((file, index) => (
         <NUploadFile
           clsPrefix={mergedClsPrefixRef.value}
           key={file.id}
           file={file}
+          index={index}
           listType={listTypeRef.value}
         />
       ))
@@ -66,7 +75,8 @@ export default defineComponent({
             `${mergedClsPrefix}-upload-file-list`,
             isImageCardTypeRef.value &&
               `${mergedClsPrefix}-upload-file-list--grid`,
-            abstract ? themeClassRef?.value : undefined
+            abstract ? themeClassRef?.value : undefined,
+            fileListClassRef.value
           ]}
           style={[
             abstract && cssVarsRef ? cssVarsRef.value : '',

@@ -4,12 +4,12 @@ import {
   computed,
   inject,
   defineComponent,
-  PropType,
-  CSSProperties,
-  ButtonHTMLAttributes,
+  type PropType,
+  type CSSProperties,
+  type ButtonHTMLAttributes,
   watchEffect,
-  ExtractPropTypes,
-  VNodeChild
+  type ExtractPropTypes,
+  type VNodeChild
 } from 'vue'
 import { useMemo } from 'vooks'
 import { changeColor } from 'seemly'
@@ -108,7 +108,7 @@ const Button = defineComponent({
         ) {
           warnOnce(
             'button',
-            "`dashed`, `ghost` and `text` props can't be used along with `secondary`, `tertiary` and `quaterary` props."
+            "`dashed`, `ghost` and `text` props can't be used along with `secondary`, `tertiary` and `quaternary` props."
           )
         }
       })
@@ -547,7 +547,7 @@ const Button = defineComponent({
     }
   },
   render () {
-    const { mergedClsPrefix, renderIcon, tag: Component, onRender } = this
+    const { mergedClsPrefix, tag: Component, onRender } = this
     onRender?.()
     const children = resolveWrappedSlot(
       this.$slots.default,
@@ -591,7 +591,7 @@ const Button = defineComponent({
               resolveWrappedSlot(
                 this.$slots.icon,
                 (children) =>
-                  (this.loading || renderIcon || children) && (
+                  (this.loading || this.renderIcon || children) && (
                     <span
                       class={`${mergedClsPrefix}-button__icon`}
                       style={{
@@ -614,7 +614,7 @@ const Button = defineComponent({
                                 class={`${mergedClsPrefix}-icon-slot`}
                                 role="none"
                               >
-                                {renderIcon ? renderIcon() : children}
+                                {this.renderIcon ? this.renderIcon() : children}
                               </div>
                             )
                         }}
@@ -654,7 +654,7 @@ type MergedProps = Partial<InternalButtonProps & NativeButtonProps>
 export default Button
 
 // XButton is for tsx type checking
-// It's not compitable with render function `h`
+// It's not compatible with render function `h`
 // Currently we don't expose it as public
 // If there's any issue about this, we may expose it
 // Since most people use template, the type checking phase doesn't work as tsx

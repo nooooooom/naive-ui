@@ -33,6 +33,7 @@ export default cB('form-item', `
     color: var(--n-label-text-color);
     transition: color .3s var(--n-bezier);
     box-sizing: border-box;
+    font-weight: var(--n-label-font-weight);
   `, [
     cE('asterisk', `
       white-space: nowrap;
@@ -61,7 +62,7 @@ export default cB('form-item', `
       "label feedback";
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto 1fr;
-    align-items: start;
+    align-items: flex-start;
   `, [
     cB('form-item-label', `
       display: grid;
@@ -99,11 +100,19 @@ export default cB('form-item', `
       `)
     ])
   ]),
+  cM('labelled-vertical-top', `
+      grid-template-areas:
+        "label"
+        "feedback"
+        "blank";
+    `),
+  cM('labelled-vertical-bottom', `
+      grid-template-areas:
+        "label"
+        "blank"
+        "feedback";
+    `),
   cM('top-labelled', `
-    grid-template-areas:
-      "label"
-      "blank"
-      "feedback";
     grid-template-rows: minmax(var(--n-label-height), auto) 1fr;
     grid-template-columns: minmax(0, 100%);
   `, [

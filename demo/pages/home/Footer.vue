@@ -11,12 +11,7 @@
         <n-text depth="1" class="col-header">
           {{ t('resources') }}
         </n-text>
-        <n-button
-          text
-          tag="a"
-          href="https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library%28Square-Corner%29.sketch"
-          download
-        >
+        <n-button text tag="a" :href="t('sketchLink')" download>
           {{ t('designResources') }}
         </n-button>
         <n-button text tag="a" target="_blank" href="https://www.xicons.org">
@@ -72,7 +67,9 @@
           {{ t('memberLimitReached') }} 35886835<br>
           {{ t('dingTalkGroupChat') }} 3
           {{ t('memberLimitReached') }} 32377370<br>
-          {{ t('dingTalkGroupChat') }} 4 8165002788
+          {{ t('dingTalkGroupChat') }} 4
+          {{ t('memberLimitReached') }} 8165002788<br>
+          {{ t('dingTalkGroupChat') }} 5 31205022250
         </n-tooltip>
       </div>
       <div class="footer-links-col footer-links-col--last">
@@ -81,9 +78,6 @@
         </n-text>
         <n-button text tag="a" target="_blank" href="https://www.tusimple.com/">
           {{ t('tusimple') }}
-        </n-button>
-        <n-button text tag="a" target="_blank" :href="t('joinUsLink')">
-          {{ t('joinUs') }}
         </n-button>
       </div>
     </div>
@@ -122,13 +116,14 @@ export default defineComponent({
           changelog: '更新日志',
           commonIssues: '常见问题',
           tusimple: '图森未来',
-          joinUs: '加入我们',
           icons: '图标库',
           libraries: '社区精选资源',
           dingTalk: '钉钉',
           dingTalkGroupChat: '钉钉交流群',
           memberLimitReached: '（已满）',
           reportBug: '报告 Bug',
+          sketchLink:
+            'https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library-zh-CN.sketch',
           joinUsLink: 'https://app.mokahr.com/campus_apply/tusenweilai/3232#/'
         },
         'en-US': {
@@ -140,13 +135,14 @@ export default defineComponent({
           changelog: 'Change Log',
           commonIssues: 'Common Issues',
           tusimple: 'TuSimple',
-          joinUs: 'Join Us',
           icons: 'Icon Library',
           libraries: 'Third-Party Libraries',
           dingTalk: 'DingTalk',
           dingTalkGroupChat: 'DingTalk Group Chat',
           memberLimitReached: '(Member limit reached)',
           reportBug: 'Report Bug',
+          sketchLink:
+            'https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library-en-US.sketch',
           joinUsLink:
             'https://boards.greenhouse.io/tusimplerelocationjobs/jobs/5137805002?gh_src=7908a9242us'
         }

@@ -5,7 +5,7 @@ import { layoutLight } from '../styles'
 import type { LayoutTheme } from '../styles'
 import { positionProp } from './interface'
 import style from './styles/layout-header.cssr'
-import { ExtractPublicPropTypes } from '../../_utils'
+import type { ExtractPublicPropTypes } from '../../_utils'
 
 export const headerProps = {
   position: positionProp,
@@ -80,7 +80,7 @@ export default defineComponent({
             `${mergedClsPrefix}-layout-header--${this.position}-positioned`,
           this.bordered && `${mergedClsPrefix}-layout-header--bordered`
         ]}
-        style={this.cssVars as any}
+        style={this.cssVars}
       >
         {this.$slots}
       </div>

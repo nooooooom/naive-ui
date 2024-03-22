@@ -1,4 +1,4 @@
-import { Ref, ComponentPublicInstance } from 'vue'
+import type { Ref, ComponentPublicInstance } from 'vue'
 import type { MergedTheme } from '../../_mixins'
 import { createInjectionKey } from '../../_utils/vue/create-injection-key'
 import type { ModalTheme } from '../styles'
@@ -9,6 +9,14 @@ HTMLElement | ComponentPublicInstance | null
 
 export const modalBodyInjectionKey =
   createInjectionKey<ModalBodyInjection>('n-modal-body')
+
+export interface ModalProviderInjection {
+  clickedRef: Ref<boolean>
+  clickedPositionRef: Ref<{ x: number, y: number } | null>
+}
+
+export const modalProviderInjectionKey =
+  createInjectionKey<ModalProviderInjection>('n-modal-provider')
 
 export interface ModalInjection {
   getMousePosition: () => {

@@ -1,4 +1,10 @@
-import { h, defineComponent, computed, PropType, CSSProperties } from 'vue'
+import {
+  h,
+  defineComponent,
+  computed,
+  type PropType,
+  type CSSProperties
+} from 'vue'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { createKey } from '../../_utils'
@@ -18,15 +24,15 @@ import image418 from './418'
 import image403 from './403'
 import style from './styles/index.cssr'
 
-const iconMap = {
-  403: image403,
-  404: image404,
-  418: image418,
-  500: image500,
-  info: <InfoIcon />,
-  success: <SuccessIcon />,
-  warning: <WarningIcon />,
-  error: <ErrorIcon />
+const iconRenderMap = {
+  403: () => image403,
+  404: () => image404,
+  418: () => image418,
+  500: () => image500,
+  info: () => <InfoIcon />,
+  success: () => <SuccessIcon />,
+  warning: () => <WarningIcon />,
+  error: () => <ErrorIcon />
 }
 
 export const resultProps = {
@@ -124,7 +130,7 @@ export default defineComponent({
         <div class={`${mergedClsPrefix}-result-icon`}>
           {$slots.icon?.() || (
             <NBaseIcon clsPrefix={mergedClsPrefix}>
-              {{ default: () => iconMap[status] }}
+              {{ default: () => iconRenderMap[status]() }}
             </NBaseIcon>
           )}
         </div>

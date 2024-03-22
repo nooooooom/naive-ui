@@ -3,8 +3,8 @@ import {
   ref,
   provide,
   defineComponent,
-  PropType,
-  ExtractPropTypes
+  type PropType,
+  type ExtractPropTypes
 } from 'vue'
 import { popoverBaseProps } from '../../popover/src/Popover'
 import type { PopoverInternalProps } from '../../popover/src/Popover'
@@ -13,11 +13,11 @@ import type { PopoverInst, PopoverTrigger } from '../../popover'
 import NPopselectPanel, { panelPropKeys, panelProps } from './PopselectPanel'
 import { omit, keep, createRefSetter, mergeEventHandlers } from '../../_utils'
 import type { ExtractPublicPropTypes } from '../../_utils'
-import { useTheme } from '../../_mixins'
+import { useConfig, useTheme } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import { popselectLight } from '../styles'
 import type { PopselectTheme } from '../styles'
-import { popselectInjectionKey, PopselectInst } from './interface'
+import { popselectInjectionKey, type PopselectInst } from './interface'
 
 export const popselectProps = {
   ...(useTheme.props as ThemeProps<PopselectTheme>),
@@ -42,12 +42,14 @@ export default defineComponent({
   inheritAttrs: false,
   __popover__: true,
   setup (props) {
+    const { mergedClsPrefixRef } = useConfig(props)
     const themeRef = useTheme(
       'Popselect',
       '-popselect',
       undefined,
       popselectLight,
-      props
+      props,
+      mergedClsPrefixRef
     )
     const popoverInstRef = ref<PopoverInst | null>(null)
     function syncPosition (): void {
@@ -93,19 +95,20 @@ export default defineComponent({
           <NPopselectPanel
             {...$attrs}
             class={[$attrs.class, className]}
-            style={[$attrs.style, style]}
+            style={[$attrs.style, ...style]}
             {...keep(this.$props, panelPropKeys)}
             ref={createRefSetter(ref)}
             onMouseenter={mergeEventHandlers([
               onMouseenter,
-              $attrs.onMouseenter as any
+              $attrs.onMouseenter as ((e: MouseEvent) => void) | undefined
             ])}
             onMouseleave={mergeEventHandlers([
               onMouseleave,
-              $attrs.onMouseleave as any
+              $attrs.onMouseleave as ((e: MouseEvent) => void) | undefined
             ])}
           >
             {{
+              header: () => this.$slots.header?.(),
               action: () => this.$slots.action?.(),
               empty: () => this.$slots.empty?.()
             }}

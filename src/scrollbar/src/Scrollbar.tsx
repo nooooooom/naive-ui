@@ -1,10 +1,10 @@
-import { h, defineComponent, PropType, ref } from 'vue'
+import { h, defineComponent, type PropType, ref } from 'vue'
 import {
   NScrollbar,
-  ScrollbarInst as InternalScrollbarInst
+  type ScrollbarInst as InternalScrollbarInst
 } from '../../_internal'
-import { ScrollbarTheme } from '../../_internal/scrollbar/styles'
-import { useTheme, ThemeProps } from '../../_mixins'
+import { type ScrollbarTheme } from '../../_internal/scrollbar/styles'
+import { useTheme, type ThemeProps } from '../../_mixins'
 import type { ExtractPublicPropTypes } from '../../_utils'
 
 export interface ScrollTo {
@@ -23,7 +23,10 @@ export const scrollbarProps = {
   ...(useTheme.props as ThemeProps<ScrollbarTheme>),
   trigger: String as PropType<'none' | 'hover'>,
   xScrollable: Boolean,
-  onScroll: Function as PropType<(e: Event) => void>
+  onScroll: Function as PropType<(e: Event) => void>,
+  contentClass: String,
+  contentStyle: [Object, String] as PropType<string | Record<string, any>>,
+  size: Number
 } as const
 
 export type ScrollbarProps = ExtractPublicPropTypes<typeof scrollbarProps>
@@ -35,9 +38,11 @@ const Scrollbar = defineComponent({
     const scrollbarInstRef = ref<InternalScrollbarInst | null>(null)
     const exposedMethods: ScrollbarInst = {
       scrollTo: (...args: any[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         scrollbarInstRef.value?.scrollTo(args[0], args[1])
       },
       scrollBy: (...args: any[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         scrollbarInstRef.value?.scrollBy(args[0], args[1])
       }
     }

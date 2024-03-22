@@ -1,9 +1,9 @@
-import { h, inject, defineComponent, PropType } from 'vue'
+import { h, inject, defineComponent, type PropType } from 'vue'
 import { useMemo } from 'vooks'
 import { NCheckbox } from '../../checkbox'
 import { getTitleAttribute } from '../../_utils'
 import { NBaseClose } from '../../_internal'
-import { transferInjectionKey, Option } from './interface'
+import { transferInjectionKey, type Option } from './interface'
 
 export default defineComponent({
   name: 'NTransferListItem',
@@ -30,7 +30,8 @@ export default defineComponent({
       mergedThemeRef,
       handleItemCheck,
       renderSourceLabelRef,
-      renderTargetLabelRef
+      renderTargetLabelRef,
+      showSelectedRef
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(transferInjectionKey)!
     const checkedRef = useMemo(() => targetValueSetRef.value.has(props.value))
@@ -43,9 +44,10 @@ export default defineComponent({
       mergedClsPrefix: mergedClsPrefixRef,
       mergedTheme: mergedThemeRef,
       checked: checkedRef,
-      handleClick,
+      showSelected: showSelectedRef,
       renderSourceLabel: renderSourceLabelRef,
-      renderTargetLabel: renderTargetLabelRef
+      renderTargetLabel: renderTargetLabelRef,
+      handleClick
     }
   },
   render () {
@@ -71,7 +73,7 @@ export default defineComponent({
         onClick={source ? this.handleClick : undefined}
       >
         <div class={`${mergedClsPrefix}-transfer-list-item__background`} />
-        {source && (
+        {source && this.showSelected && (
           <div class={`${mergedClsPrefix}-transfer-list-item__checkbox`}>
             <NCheckbox
               theme={mergedTheme.peers.Checkbox}

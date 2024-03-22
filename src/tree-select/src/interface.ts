@@ -1,5 +1,5 @@
-import { TreeMate, TreeNode } from 'treemate'
-import { HTMLAttributes, Ref, VNodeChild } from 'vue'
+import { type TreeMate, type TreeNode } from 'treemate'
+import { type HTMLAttributes, type Ref, type VNodeChild } from 'vue'
 import type { TreeOptionBase, TreeOption } from '../../tree/src/interface'
 import { createInjectionKey } from '../../_utils'
 
@@ -115,8 +115,16 @@ export type TreeSelectNodeProps = (info: {
 }) => HTMLAttributes & Record<string, unknown>
 
 export interface TreeSelectInst {
-  getCheckedKeys: () => Array<string | number>
-  getIndeterminateKeys: () => Array<string | number>
+  getCheckedData: () => {
+    keys: Array<string | number>
+    options: Array<TreeSelectOption | null>
+  }
+  getIndeterminateData: () => {
+    keys: Array<string | number>
+    options: Array<TreeSelectOption | null>
+  }
   focus: () => void
+  focusInput: () => void
   blur: () => void
+  blurInput: () => void
 }

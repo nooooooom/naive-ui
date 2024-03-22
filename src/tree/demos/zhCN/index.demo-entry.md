@@ -19,8 +19,11 @@ disabled.vue
 prefix-and-suffix.vue
 batch-render.vue
 switcher-icon.vue
+file-tree.vue
 node-props.vue
+show-line.vue
 checkbox-placement.vue
+override-click-behavior.vue
 check-strategy-debug.vue
 change-debug.vue
 scrollbar-debug.vue
@@ -44,7 +47,7 @@ expand-debug.vue
 | cancelable | `boolean` | `true` | 选中之后是否允许取消 |  |
 | cascade | `boolean` | `false` | 是否关联选项 |  |
 | check-strategy | `string` | `'all'` | 设置勾选策略来指定勾选回调返回的值，`all` 表示回调函数值为全部选中节点；`parent` 表示回调函数值为父节点（当父节点下所有子节点都选中时）；`child` 表示回调函数值为子节点 |  |
-| checkable | `boolean` | `false` | 是否显示选择框，需要将 `cascade` 设置为 `true` |  |
+| checkable | `boolean` | `false` | 是否显示选择框 |  |
 | checkbox-placement | `'left' \| 'right'` | `'left'` | 复选框的位置 | 2.28.3 |
 | children-field | `string` | `'children'` | 替代 `TreeOption` 中的 children 字段名 |  |
 | checked-keys | `Array<string \| number>` | `undefined` | 如果设定则 `checked` 状态受控 |  |
@@ -59,6 +62,7 @@ expand-debug.vue
 | expand-on-click | `boolean` | `false` | 是否在点击节点后展开或收缩节点 | 2.29.1 |
 | expanded-keys | `Array<string \| number>` | `undefined` | 如果设定则展开受控 |  |
 | filter | `(pattern: string, node: TreeOption) => boolean` | 一个简单的字符串过滤算法 | 基于 pattern 指定过滤节点的函数 |  |
+| get-children | `(option: any) => unknown` | `undefined` | 获取当前选项的子选项 | 2.34.3 |
 | indeterminate-keys | `Array<string \| number>` | `undefined` | 部分选中选项的 key |  |
 | keyboard | `boolean` | `true` | 是否支持键盘操作 | 2.32.2 |
 | key-field | `string` | `'key'` | 替代 `TreeOption` 中的 key 字段名 |  |
@@ -66,15 +70,18 @@ expand-debug.vue
 | disabled-field | `string` | `'disabled'` | 替代 `TreeOption` 中的 disabled 字段名 | 2.32.2 |
 | node-props | `(info: { option: TreeOption }) => HTMLAttributes` | `undefined` | 节点的 HTML 属性 | 2.25.0 |
 | multiple | `boolean` | `false` | 是否允许节点多选 |  |
-| on-load | `(node: TreeOption) => Promise<void>` | `undefined` | 异步加载数据的回调函数 |  |
+| on-load | `(node: TreeOption) => Promise<unknown>` | `undefined` | 异步加载数据的回调函数，如果没有加载到数据你应该让 Promise resolve `false` 或者 reject 这个 Promise，否则加载动画不会停止 | 非 void Promise 2.34.3 |
+| override-default-node-click-behavior | `(info: { option: TreeOption }) => 'toggleExpand' \| 'toggleSelect' \| 'toggleCheck' \| 'default' \| 'none'` | `undefined` | 覆盖默认的节点点击行为 | 2.37.0 |
 | pattern | `string` | `''` | 默认搜索的内容 |  |
 | render-label | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点内容的渲染函数 |  |
 | render-prefix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点前缀的渲染函数 |  |
 | render-suffix | `(info: { option: TreeOption, checked: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点后缀的渲染函数 |  |
-| render-switcher-icon | `(props: { expanded: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点展开开关的渲染函数 | 2.24.0, `optimize` NEXT_VERSION |
+| render-switcher-icon | `(props: { option: TreeOption, expanded: boolean, selected: boolean }) => VNodeChild` | `undefined` | 节点展开开关的渲染函数 | 2.24.0, `props` 2.34.0 |
+| scrollbar-props | `object` | `undefined` | 属性参考 [Scrollbar props](scrollbar#Scrollbar-Props) |   |
 | selectable | `boolean` | `true` | 节点是否可以被选中 |  |
 | selected-keys | `Array<string \| number>` | `undefined` | 如果设定则 `selected` 状态受控 |  |
 | show-irrelevant-nodes | `boolean` | `true` | 是否在搜索状态显示和搜索无关的节点 | 2.28.1 |
+| show-line | `boolean` | `false` | 是否显示连接线 | 2.35.0 |
 | virtual-scroll | `boolean` | `false` | 是否启用虚拟滚动，启用前你需要设定好树的高度样式 |  |
 | watch-props | `Array<'defaultCheckedKeys' \| 'defaultSelectedKeys' \|'defaultExpandedKeys'>` | `undefined` | 需要检测变更的默认属性，检测后组件状态会更新。注意：`watch-props` 本身不是响应式的 |  |
 | on-dragend | `(data: { node: TreeOption, event: DragEvent }) => void` | `undefined` | 节点完成拖拽动作后的回调函数 |  |
@@ -82,10 +89,10 @@ expand-debug.vue
 | on-dragleave | `(data: { node: TreeOption, event: DragEvent }) => void` | `undefined` | 拖拽一个节点，该节点离开其它节点后的回调函数 |  |
 | on-dragstart | `(data: { node: TreeOption, event: DragEvent }) => void` | `undefined` | 开始拖拽某一个节点的回调函数 |  |
 | on-drop | `(data: { node: TreeOption, dragNode: TreeOption, dropPosition: 'before' \| 'inside' \| 'after', event: DragEvent }) => void` | `undefined` | 节点完成拖拽动作后的回调函数 |  |
-| on-update:checked-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'check' \| 'uncheck' }) => void` | `undefined` | 节点勾选项发生变化时的回调函数 | `meta` NEXT_VERSION |
+| on-update:checked-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'check' \| 'uncheck' }) => void` | `undefined` | 节点勾选项发生变化时的回调函数 | `meta` 2.34.0 |
 | on-update:indeterminate-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>) => void` | `undefined` | 节点部分勾选项发生变化时的回调函数 |  |
-| on-update:expanded-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'expand' \| 'collapse' \| 'filter' }) => void` | `undefined` | 节点展开项发生变化时的回调函数 | `meta` NEXT_VERSION |
-| on-update:selected-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'select' \| 'unselect' }) => void` | `undefined` | 节点选中项发生变化时的回调函数 | `meta` NEXT_VERSION |
+| on-update:expanded-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'expand' \| 'collapse' \| 'filter' }) => void` | `undefined` | 节点展开项发生变化时的回调函数 | `meta` 2.34.0 |
+| on-update:selected-keys | `(keys: Array<string \| number>, option: Array<TreeOption \| null>, meta: { node: TreeOption \| null, action: 'select' \| 'unselect' }) => void` | `undefined` | 节点选中项发生变化时的回调函数 | `meta` 2.34.0 |
 
 ### TreeOption Properties
 
@@ -100,12 +107,32 @@ expand-debug.vue
 | prefix? | `string \| (() => VNodeChild)` | 节点的前缀 |
 | suffix? | `string \| (() => VNodeChild)` | 节点的后缀 |
 
-## Methods
+### Tree Slots
+
+| 名称  | 参数 | 描述                  | 版本 |
+| ----- | ---- | --------------------- | ---- |
+| empty | `()` | 树组件无数据时的 slot |      |
 
 ### Tree Methods
 
 | 名称 | 参数 | 说明 | 版本 |
 | --- | --- | --- | --- |
-| scrollTo | `(options: { key: string \| number })` | 在虚拟滚动模式下滚动到某个节点 | 2.32.2 |
-| getCheckedKeys | `() => Array<string \| number>` | 获取选中的 key | NEXT_VERSION |
-| getIndeterminateKeys | `() => Array<string \| number>` | 获取半选的 key | NEXT_VERSION |
+| scrollTo | `ScrollTo` | 在虚拟滚动模式下滚动到某个节点 | 2.32.2 |
+| getCheckedData | `() => { keys: Array<string \| number>, options: Array<TreeOption \| null> }` | 获取选中的数据 | 2.34.1 |
+| getIndeterminateData | `() => { keys: Array<string \| number>, options: Array<TreeOption \| null> }` | 获取半选的数据 | 2.34.1 |
+
+#### ScrollTo Type
+
+```ts
+interface ScrollTo {
+  (x: number, y: number): void
+  (options: { left?: number; top?: number; debounce?: boolean }): void
+  (options: { index: number; debounce?: boolean }): void
+  (options: { key: string | number; debounce?: boolean }): void
+  (options: { position: 'top' | 'bottom'; debounce?: boolean }): void
+}
+```
+
+### Others
+
+1. `treeGetClickTarget: (e: MouseEvent) => ('checkbox' | 'switcher' | 'node')`：获取点击位置，可以用于 `nodeProps.onClick`

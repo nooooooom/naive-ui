@@ -9,18 +9,23 @@ import {
   mergeProps,
   inject,
   onBeforeUnmount,
-  DirectiveArguments,
-  PropType,
+  type DirectiveArguments,
+  type PropType,
   watch,
   toRef,
   provide,
-  CSSProperties,
-  VNode,
-  VNodeChild,
+  type CSSProperties,
+  type VNode,
+  type VNodeChild,
   watchEffect,
   Fragment
 } from 'vue'
-import { VFollower, FollowerPlacement, FollowerInst, VFocusTrap } from 'vueuc'
+import {
+  VFollower,
+  type FollowerPlacement,
+  type FollowerInst,
+  VFocusTrap
+} from 'vueuc'
 import { clickoutside, mousemoveoutside } from 'vdirs'
 import { getPreciseEventTarget } from 'seemly'
 import { NxScrollbar } from '../../_internal/scrollbar'
@@ -52,7 +57,10 @@ export const popoverBodyProps = {
   duration: Number,
   raw: Boolean,
   arrowPointToCenter: Boolean,
+  arrowClass: String,
   arrowStyle: [String, Object] as PropType<string | CSSProperties>,
+  arrowWrapperClass: String,
+  arrowWrapperStyle: [String, Object] as PropType<string | CSSProperties>,
   displayDirective: String as PropType<'if' | 'show'>,
   x: Number,
   y: Number,
@@ -62,8 +70,11 @@ export const popoverBodyProps = {
   width: [Number, String] as PropType<number | 'trigger'>,
   keepAliveOnHover: Boolean,
   scrollable: Boolean,
+  contentClass: String,
   contentStyle: [Object, String] as PropType<CSSProperties | string>,
+  headerClass: String,
   headerStyle: [Object, String] as PropType<CSSProperties | string>,
+  footerClass: String,
   footerStyle: [Object, String] as PropType<CSSProperties | string>,
   // private
   internalDeactivateImmediately: Boolean,
@@ -77,17 +88,30 @@ export const popoverBodyProps = {
 }
 
 interface RenderArrowProps {
+  arrowClass: string | undefined
   arrowStyle: string | CSSProperties | undefined
+  arrowWrapperClass: string | undefined
+  arrowWrapperStyle: string | CSSProperties | undefined
   clsPrefix: string
 }
 
 export const renderArrow = ({
+  arrowClass,
   arrowStyle,
+  arrowWrapperClass,
+  arrowWrapperStyle,
   clsPrefix
 }: RenderArrowProps): VNode | null => {
   return (
-    <div key="__popover-arrow__" class={`${clsPrefix}-popover-arrow-wrapper`}>
-      <div class={`${clsPrefix}-popover-arrow`} style={arrowStyle} />
+    <div
+      key="__popover-arrow__"
+      style={arrowWrapperStyle}
+      class={[`${clsPrefix}-popover-arrow-wrapper`, arrowWrapperClass]}
+    >
+      <div
+        class={[`${clsPrefix}-popover-arrow`, arrowClass]}
+        style={arrowStyle}
+      />
     </div>
   )
 }
@@ -108,6 +132,7 @@ export default defineComponent({
       mergedClsPrefixRef
     )
     const followerRef = ref<FollowerInst | null>(null)
+    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
     const NPopover = inject<PopoverInjection>('NPopover') as PopoverInjection
     const bodyRef = ref<HTMLElement | null>(null)
     const followerEnabledRef = ref(props.show)
@@ -290,7 +315,10 @@ export default defineComponent({
               {resolveWrappedSlot(slots.header, (children) => {
                 return children ? (
                   <div
-                    class={`${mergedClsPrefix}-popover__header`}
+                    class={[
+                      `${mergedClsPrefix}-popover__header`,
+                      props.headerClass
+                    ]}
                     style={props.headerStyle}
                   >
                     {children}
@@ -300,7 +328,10 @@ export default defineComponent({
               {resolveWrappedSlot(slots.default, (children) => {
                 return children ? (
                   <div
-                    class={`${mergedClsPrefix}-popover__content`}
+                    class={[
+                      `${mergedClsPrefix}-popover__content`,
+                      props.contentClass
+                    ]}
                     style={props.contentStyle}
                   >
                     {slots}
@@ -310,7 +341,10 @@ export default defineComponent({
               {resolveWrappedSlot(slots.footer, (children) => {
                 return children ? (
                   <div
-                    class={`${mergedClsPrefix}-popover__footer`}
+                    class={[
+                      `${mergedClsPrefix}-popover__footer`,
+                      props.footerClass
+                    ]}
                     style={props.footerStyle}
                   >
                     {children}
@@ -322,7 +356,10 @@ export default defineComponent({
             slots.default?.()
           ) : (
             <div
-              class={`${mergedClsPrefix}-popover__content`}
+              class={[
+                `${mergedClsPrefix}-popover__content`,
+                props.contentClass
+              ]}
               style={props.contentStyle}
             >
               {slots}
@@ -333,7 +370,9 @@ export default defineComponent({
               contentClass={
                 hasHeaderOrFooter
                   ? undefined
-                  : `${mergedClsPrefix}-popover__content`
+                  : `${mergedClsPrefix}-popover__content ${
+                      props.contentClass ?? ''
+                    }`
               }
               contentStyle={hasHeaderOrFooter ? undefined : props.contentStyle}
             >
@@ -346,7 +385,10 @@ export default defineComponent({
           )
           const arrow = props.showArrow
             ? renderArrow({
+              arrowClass: props.arrowClass,
               arrowStyle: props.arrowStyle,
+              arrowWrapperClass: props.arrowWrapperClass,
+              arrowWrapperStyle: props.arrowWrapperStyle,
               clsPrefix: mergedClsPrefix
             })
             : null
@@ -403,7 +445,7 @@ export default defineComponent({
               `${mergedClsPrefix}-popover-shared--center-arrow`
           ],
           bodyRef,
-          styleRef.value as any,
+          styleRef.value,
           handleMouseEnter,
           handleMouseLeave
         )

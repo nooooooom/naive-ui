@@ -1,11 +1,11 @@
-import { h, defineComponent, computed, CSSProperties } from 'vue'
+import { h, defineComponent, computed, type CSSProperties } from 'vue'
 import {
   InfoIcon,
   SuccessIcon,
   WarningIcon,
   ErrorIcon
 } from '../../_internal/icons'
-import { useConfig, useTheme, useThemeClass } from '../../_mixins'
+import { useConfig, useRtl, useTheme, useThemeClass } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
 import {
   render,
@@ -19,6 +19,7 @@ import { dialogLight } from '../styles'
 import type { DialogTheme } from '../styles'
 import { dialogProps } from './dialogProps'
 import style from './styles/index.cssr'
+import { getMargin } from 'seemly'
 
 const iconRenderMap = {
   default: () => <InfoIcon />,
@@ -39,8 +40,13 @@ export const NDialog = defineComponent({
     ...dialogProps
   },
   setup (props) {
-    const { mergedComponentPropsRef, mergedClsPrefixRef, inlineThemeDisabled } =
-      useConfig(props)
+    const {
+      mergedComponentPropsRef,
+      mergedClsPrefixRef,
+      inlineThemeDisabled,
+      mergedRtlRef
+    } = useConfig(props)
+    const rtlEnabledRef = useRtl('Dialog', mergedRtlRef, mergedClsPrefixRef)
     const mergedIconPlacementRef = computed(() => {
       const { iconPlacement } = props
       return (
@@ -103,12 +109,16 @@ export const NDialog = defineComponent({
           [createKey('iconColor', type)]: iconColor
         }
       } = themeRef.value
+      const iconMarginDiscrete = getMargin(iconMargin)
       return {
         '--n-font-size': fontSize,
         '--n-icon-color': iconColor,
         '--n-bezier': cubicBezierEaseInOut,
         '--n-close-margin': closeMargin,
-        '--n-icon-margin': iconMargin,
+        '--n-icon-margin-top': iconMarginDiscrete.top,
+        '--n-icon-margin-right': iconMarginDiscrete.right,
+        '--n-icon-margin-bottom': iconMarginDiscrete.bottom,
+        '--n-icon-margin-left': iconMarginDiscrete.left,
         '--n-icon-size': iconSize,
         '--n-close-size': closeSize,
         '--n-close-icon-size': closeIconSize,
@@ -141,6 +151,7 @@ export const NDialog = defineComponent({
       : undefined
     return {
       mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       mergedIconPlacement: mergedIconPlacementRef,
       mergedTheme: themeRef,
       handlePositiveClick,
@@ -194,7 +205,10 @@ export const NDialog = defineComponent({
 
     const actionNode = resolveWrappedSlot(this.$slots.action, (children) =>
       children || positiveText || negativeText || action ? (
-        <div class={`${mergedClsPrefix}-dialog__action`}>
+        <div
+          class={[`${mergedClsPrefix}-dialog__action`, this.actionClass]}
+          style={this.actionStyle}
+        >
           {children ||
             (action
               ? [render(action)]
@@ -241,30 +255,46 @@ export const NDialog = defineComponent({
           this.themeClass,
           this.closable && `${mergedClsPrefix}-dialog--closable`,
           `${mergedClsPrefix}-dialog--icon-${mergedIconPlacement}`,
-          bordered && `${mergedClsPrefix}-dialog--bordered`
+          bordered && `${mergedClsPrefix}-dialog--bordered`,
+          this.rtlEnabled && `${mergedClsPrefix}-dialog--rtl`
         ]}
         style={cssVars as CSSProperties}
         role="dialog"
       >
-        {closable ? (
-          <NBaseClose
-            clsPrefix={mergedClsPrefix}
-            class={`${mergedClsPrefix}-dialog__close`}
-            onClick={this.handleCloseClick}
-          />
-        ) : null}
+        {closable
+          ? resolveWrappedSlot(this.$slots.close, (node) => {
+            const classNames = [
+                `${mergedClsPrefix}-dialog__close`,
+                this.rtlEnabled && `${mergedClsPrefix}-dialog--rtl`
+            ]
+            return node ? (
+                <div class={classNames}>{node}</div>
+            ) : (
+                <NBaseClose
+                  clsPrefix={mergedClsPrefix}
+                  class={classNames}
+                  onClick={this.handleCloseClick}
+                />
+            )
+          })
+          : null}
         {showIcon && mergedIconPlacement === 'top' ? (
           <div class={`${mergedClsPrefix}-dialog-icon-container`}>{icon}</div>
         ) : null}
-        <div class={`${mergedClsPrefix}-dialog__title`}>
+        <div
+          class={[`${mergedClsPrefix}-dialog__title`, this.titleClass]}
+          style={this.titleStyle}
+        >
           {showIcon && mergedIconPlacement === 'left' ? icon : null}
           {resolveSlot(this.$slots.header, () => [render(title)])}
         </div>
         <div
           class={[
             `${mergedClsPrefix}-dialog__content`,
-            actionNode ? '' : `${mergedClsPrefix}-dialog__content--last`
+            actionNode ? '' : `${mergedClsPrefix}-dialog__content--last`,
+            this.contentClass
           ]}
+          style={this.contentStyle}
         >
           {resolveSlot(this.$slots.default, () => [render(content)])}
         </div>

@@ -6,22 +6,22 @@ import {
   ref,
   Teleport,
   defineComponent,
-  PropType,
-  ExtractPropTypes,
+  type PropType,
+  type ExtractPropTypes,
   provide,
-  Ref,
-  CSSProperties
+  type Ref,
+  type CSSProperties
 } from 'vue'
 import { createId } from 'seemly'
 import { useConfig, useTheme } from '../../_mixins'
 import type { MergedTheme, ThemeProps } from '../../_mixins'
 import {
-  ExtractPublicPropTypes,
+  type ExtractPublicPropTypes,
   omit,
-  Mutable,
+  type Mutable,
   createInjectionKey
 } from '../../_utils'
-import { notificationLight, NotificationTheme } from '../styles'
+import { notificationLight, type NotificationTheme } from '../styles'
 import { NotificationContainer } from './NotificationContainer'
 import { NotificationEnvironment } from './NotificationEnvironment'
 import type { NotificationOptions } from './NotificationEnvironment'
@@ -81,6 +81,7 @@ interface NotificationRef {
 
 export const notificationProviderProps = {
   ...(useTheme.props as ThemeProps<NotificationTheme>),
+  containerClass: String,
   containerStyle: [String, Object] as PropType<string | CSSProperties>,
   to: [String, Object] as PropType<string | HTMLElement>,
   scrollable: {
@@ -211,6 +212,7 @@ export default defineComponent({
         {this.notificationList.length ? (
           <Teleport to={this.to ?? 'body'}>
             <NotificationContainer
+              class={this.containerClass}
               style={this.containerStyle}
               scrollable={
                 this.scrollable && placement !== 'top' && placement !== 'bottom'

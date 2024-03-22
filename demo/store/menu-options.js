@@ -2,6 +2,7 @@
 
 import { h } from 'vue'
 import { RouterLink } from 'vue-router'
+import { NTag, NSpace } from 'naive-ui'
 
 export const renderMenuLabel = (option) => {
   if (!('path' in option) || option.label === '--Debug') {
@@ -14,6 +15,33 @@ export const renderMenuLabel = (option) => {
     },
     { default: () => option.label }
   )
+}
+
+const renderNewTag = (isZh) =>
+  h(
+    NTag,
+    { type: 'success', size: 'small', round: true, bordered: false },
+    { default: isZh ? () => '新' : () => 'New' }
+  )
+
+const renderItemExtra = (rawItem, isZh) => {
+  if (!rawItem.enSuffix || !isZh) {
+    return rawItem.isNew ? renderNewTag : undefined
+  }
+  const renderEn = () =>
+    h(
+      NSpace,
+      { inline: true, size: 6, wrapItem: false, align: 'center' },
+      { default: () => [rawItem.en, renderNewTag(isZh)] }
+    )
+  return rawItem.isNew ? renderEn : rawItem.en
+}
+const getItemExtraString = (rawItem, isZh) => {
+  if (!rawItem.enSuffix || !isZh) {
+    return ''
+  } else {
+    return rawItem.en
+  }
 }
 
 const appendCounts = (item) => {
@@ -40,7 +68,8 @@ function createItems (lang, theme, prefix, items) {
       ...rawItem,
       key: rawItem.en,
       label: rawItem[langKey] || rawItem.en,
-      extra: rawItem.enSuffix && isZh ? rawItem.en : undefined,
+      extra: renderItemExtra(rawItem, isZh),
+      extraString: getItemExtraString(rawItem, isZh),
       path: rawItem.path
         ? `/${lang}/${theme}` + prefix + rawItem.path
         : undefined
@@ -260,6 +289,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           zh: '水印',
           enSuffix: true,
           path: '/watermark'
+        },
+        {
+          en: 'Float Button',
+          zh: '浮动按钮',
+          enSuffix: true,
+          path: '/float-button',
+          isNew: true
         }
       ]
     }),
@@ -462,6 +498,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           path: '/number-animation'
         },
         {
+          en: 'QR Code',
+          zh: '二维码',
+          enSuffix: true,
+          path: '/qr-code',
+          isNew: true
+        },
+        {
           en: 'Statistic',
           zh: '统计数据',
           enSuffix: true,
@@ -496,6 +539,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           zh: '树',
           enSuffix: true,
           path: '/tree'
+        },
+        {
+          en: 'Infinite Scroll',
+          zh: '无限滚动',
+          enSuffix: true,
+          path: '/infinite-scroll',
+          isNew: true
         }
       ]
     }),
@@ -663,6 +713,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
       type: 'group',
       children: [
         {
+          en: 'Flex',
+          zh: '弹性布局',
+          enSuffix: true,
+          path: '/flex',
+          isNew: true
+        },
+        {
           en: 'Layout',
           zh: '布局',
           enSuffix: true,
@@ -685,6 +742,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           zh: '间距',
           enSuffix: true,
           path: '/space'
+        },
+        {
+          en: 'Split',
+          zh: '面板分割',
+          enSuffix: true,
+          path: '/split',
+          isNew: true
         }
       ]
     }),
@@ -710,6 +774,13 @@ export function createComponentMenuOptions ({ lang, theme, mode }) {
           zh: '滚动条',
           enSuffix: true,
           path: '/scrollbar'
+        },
+        {
+          en: 'Virtual List',
+          zh: '虚拟列表',
+          enSuffix: true,
+          path: '/virtual-list',
+          isNew: true
         }
       ]
     }),

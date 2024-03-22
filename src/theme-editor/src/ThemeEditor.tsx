@@ -12,8 +12,8 @@ import { cloneDeep, merge } from 'lodash-es'
 import { configProviderInjectionKey } from '../../config-provider/src/context'
 import { lightTheme } from '../../themes/light'
 import {
-  GlobalTheme,
-  GlobalThemeOverrides,
+  type GlobalTheme,
+  type GlobalThemeOverrides,
   NConfigProvider
 } from '../../config-provider'
 import { NPopover } from '../../popover'
@@ -27,7 +27,7 @@ import { NDivider } from '../../divider'
 import { NButton } from '../../button'
 import { NColorPicker } from '../../color-picker'
 import { NEmpty } from '../../empty'
-import { lockHtmlScrollRightCompensationRef } from '../../_utils'
+import { download, lockHtmlScrollRightCompensationRef } from '../../_utils'
 import { NIcon } from '../../icon'
 import { MaximizeIcon } from './MaximizeIcon'
 import { MinimizeIcon } from './MinimizeIcon'
@@ -69,7 +69,7 @@ export default defineComponent({
   name: 'ThemeEditor',
   inheritAttrs: false,
   setup () {
-    const isMaximized = ref<Boolean>(false)
+    const isMaximized = ref<boolean>(false)
     const fileInputRef = ref<HTMLInputElement | null>(null)
     const NConfigProvider = inject(configProviderInjectionKey, null)
     const theme = computed(() => {
@@ -105,10 +105,10 @@ export default defineComponent({
     })
     const showPanelRef = ref(false)
     const overridesRef = ref<any>(
-      JSON.parse(localStorage['naive-ui-theme-overrides'] || '{}')
+      JSON.parse((localStorage['naive-ui-theme-overrides'] as string) || '{}')
     )
     const tempOverridesRef = ref<any>(
-      JSON.parse(localStorage['naive-ui-theme-overrides'] || '{}')
+      JSON.parse((localStorage['naive-ui-theme-overrides'] as string) || '{}')
     )
     const varNamePatternRef = ref('')
     const compNamePatternRef = ref('')
@@ -168,12 +168,7 @@ export default defineComponent({
       const url = URL.createObjectURL(
         new Blob([JSON.stringify(overridesRef.value, undefined, 2)])
       )
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'naive-ui-theme-overrides.json'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      download(url, 'naive-ui-theme-overrides.json')
       URL.revokeObjectURL(url)
     }
     watch(overridesRef, (value) => {
@@ -246,7 +241,7 @@ export default defineComponent({
                     ]}
                     // We use ts-ignore for vue-tsc, since it seems to patch
                     // native event for vue components
-                    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+                    // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error, @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     onClick={() => {
                       this.showPanel = !this.showPanel

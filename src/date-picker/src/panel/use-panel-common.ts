@@ -3,18 +3,18 @@ import {
   inject,
   ref,
   nextTick,
-  PropType,
-  ExtractPropTypes
+  type PropType,
+  type ExtractPropTypes
 } from 'vue'
 import { useKeyboard } from 'vooks'
 import {
-  Value,
+  type Value,
   datePickerInjectionKey,
-  OnPanelUpdateValue,
-  OnPanelUpdateValueImpl,
-  OnClose,
-  Shortcuts,
-  DefaultTime
+  type OnPanelUpdateValue,
+  type OnPanelUpdateValueImpl,
+  type OnClose,
+  type Shortcuts,
+  type DefaultTime
 } from '../interface'
 
 const TIME_FORMAT = 'HH:mm:ss'
@@ -42,7 +42,11 @@ const usePanelCommonProps = {
   },
   themeClass: String,
   onRender: Function as PropType<(() => void) | undefined>,
-  panel: Boolean
+  panel: Boolean,
+  onNextMonth: Function as PropType<() => void>,
+  onPrevMonth: Function as PropType<() => void>,
+  onNextYear: Function as PropType<() => void>,
+  onPrevYear: Function as PropType<() => void>
 } as const
 
 type UsePanelCommonProps = ExtractPropTypes<typeof usePanelCommonProps>

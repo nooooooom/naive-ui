@@ -4,32 +4,32 @@ import {
   computed,
   toRef,
   defineComponent,
-  PropType,
+  type PropType,
   watch,
   Transition,
   withDirectives,
   vShow,
-  InputHTMLAttributes,
-  HTMLAttributes,
+  type InputHTMLAttributes,
+  type HTMLAttributes,
   watchEffect
 } from 'vue'
 import { getPreciseEventTarget, happensIn } from 'seemly'
-import { createTreeMate, TreeNode } from 'treemate'
+import { createTreeMate, type TreeNode } from 'treemate'
 import {
   VBinder,
   VFollower,
   VTarget,
-  FollowerInst,
-  FollowerPlacement
+  type FollowerInst,
+  type FollowerPlacement
 } from 'vueuc'
 import { useIsMounted, useMergedState, useCompitable } from 'vooks'
 import { clickoutside } from 'vdirs'
 import {
-  RenderLabel,
-  RenderOption,
-  NodeProps
+  type RenderLabel,
+  type RenderOption,
+  type NodeProps
 } from '../../_internal/select-menu/src/interface'
-import { RenderTag } from '../../_internal/selection/src/interface'
+import { type RenderTag } from '../../_internal/selection/src/interface'
 import type { FormValidationStatus } from '../../form/src/interface'
 import {
   useTheme,
@@ -49,10 +49,10 @@ import type { MaybeArray, ExtractPublicPropTypes } from '../../_utils'
 import {
   NInternalSelectMenu,
   NInternalSelection,
-  InternalSelectMenuRef
+  type InternalSelectMenuRef,
+  type InternalSelectionInst
 } from '../../_internal'
-import type { InternalSelectionInst } from '../../_internal'
-import { selectLight, SelectTheme } from '../styles'
+import { selectLight, type SelectTheme } from '../styles'
 import {
   createValOptMap,
   filterOptions,
@@ -76,6 +76,7 @@ import type {
   SelectFilter
 } from './interface'
 import style from './styles/index.cssr'
+import { type PopoverProps } from '../../popover'
 
 export const selectProps = {
   ...(useTheme.props as ThemeProps<SelectTheme>),
@@ -96,6 +97,10 @@ export const selectProps = {
   defaultValue: {
     type: [String, Number, Array] as PropType<Value | null>,
     default: null
+  },
+  keyboard: {
+    type: Boolean,
+    default: true
   },
   value: [String, Number, Array] as PropType<Value | null>,
   placeholder: String,
@@ -135,6 +140,7 @@ export const selectProps = {
     default: true
   },
   maxTagCount: [Number, String] as PropType<number | 'responsive'>,
+  ellipsisTagPopoverProps: Object as PropType<PopoverProps>,
   consistentMenuWidth: {
     type: Boolean,
     default: true
@@ -164,6 +170,7 @@ export const selectProps = {
   inputProps: Object as PropType<InputHTMLAttributes>,
   nodeProps: Function as PropType<NodeProps>,
   ignoreComposition: { type: Boolean, default: true },
+  showOnFocus: Boolean,
   // for jsx
   onUpdateValue: [Function, Array] as PropType<
   MaybeArray<OnUpdateValue> | undefined
@@ -374,7 +381,6 @@ export default defineComponent({
     const selectedOptionsRef = computed(() => {
       if (props.multiple) {
         const { value: values } = mergedValueRef
-        console.log('values', values)
         if (!Array.isArray(values)) return []
         return getMergedOptions(values)
       }
@@ -421,10 +427,13 @@ export default defineComponent({
       if (onClear) call(onClear)
     }
     function doFocus (e: FocusEvent): void {
-      const { onFocus } = props
+      const { onFocus, showOnFocus } = props
       const { nTriggerFormFocus } = formItem
       if (onFocus) call(onFocus, e)
       nTriggerFormFocus()
+      if (showOnFocus) {
+        openMenu()
+      }
     }
     function doSearch (value: string): void {
       const { onSearch } = props
@@ -509,7 +518,7 @@ export default defineComponent({
       }
     }
     function handleTriggerBlur (e: FocusEvent): void {
-      if (menuRef.value?.selfRef?.contains(e.relatedTarget as any)) {
+      if (menuRef.value?.selfRef?.contains(e.relatedTarget as Node | null)) {
         return
       }
       focusedRef.value = false
@@ -525,7 +534,7 @@ export default defineComponent({
       focusedRef.value = true
     }
     function handleMenuBlur (e: FocusEvent): void {
-      if (triggerRef.value?.$el.contains(e.relatedTarget as any)) return
+      if (triggerRef.value?.$el.contains(e.relatedTarget as Node | null)) return
       focusedRef.value = false
       doBlur(e)
       // outside select, don't need to return focus
@@ -664,14 +673,20 @@ export default defineComponent({
         const optionBeingCreated = onCreate
           ? onCreate(value)
           : { [props.labelField]: value, [props.valueField]: value }
-        const { valueField } = props
+        const { valueField, labelField } = props
         if (
-          compitableOptionsRef.value.some(
-            (option) => option[valueField] === optionBeingCreated[valueField]
-          ) ||
-          createdOptionsRef.value.some(
-            (option) => option[valueField] === optionBeingCreated[valueField]
-          )
+          compitableOptionsRef.value.some((option) => {
+            return (
+              option[valueField] === optionBeingCreated[valueField] ||
+              option[labelField] === optionBeingCreated[labelField]
+            )
+          }) ||
+          createdOptionsRef.value.some((option) => {
+            return (
+              option[valueField] === optionBeingCreated[valueField] ||
+              option[labelField] === optionBeingCreated[labelField]
+            )
+          })
         ) {
           beingCreatedOptionsRef.value = emptyArray
         } else {
@@ -702,6 +717,10 @@ export default defineComponent({
     // keyboard events
     // also for menu keydown
     function handleKeydown (e: KeyboardEvent): void {
+      if (!props.keyboard) {
+        e.preventDefault()
+        return
+      }
       switch (e.key) {
         case ' ':
           if (props.filterable) break
@@ -788,8 +807,14 @@ export default defineComponent({
       focus: () => {
         triggerRef.value?.focus()
       },
+      focusInput: () => {
+        triggerRef.value?.focusInput()
+      },
       blur: () => {
         triggerRef.value?.blur()
+      },
+      blurInput: () => {
+        triggerRef.value?.blurInput()
       }
     }
     const cssVarsRef = computed(() => {
@@ -870,6 +895,7 @@ export default defineComponent({
                       clsPrefix={this.mergedClsPrefix}
                       showArrow={this.showArrow}
                       maxTagCount={this.maxTagCount}
+                      ellipsisTagPopoverProps={this.ellipsisTagPopoverProps}
                       bordered={this.mergedBordered}
                       active={this.activeWithoutMenuOpen || this.mergedShow}
                       pattern={this.pattern}
@@ -985,6 +1011,7 @@ export default defineComponent({
                             >
                               {{
                                 empty: () => [this.$slots.empty?.()],
+                                header: () => [this.$slots.header?.()],
                                 action: () => [this.$slots.action?.()]
                               }}
                             </NInternalSelectMenu>,

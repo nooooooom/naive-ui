@@ -1,5 +1,5 @@
-import { SelectBaseOption } from '../../select/src/interface'
-import { TreeSelectTmNode } from './interface'
+import { type SelectBaseOption } from '../../select/src/interface'
+import { type TreeSelectTmNode } from './interface'
 
 export function treeOption2SelectOption (
   tmNode: TreeSelectTmNode,
@@ -8,7 +8,7 @@ export function treeOption2SelectOption (
   const { rawNode } = tmNode
   return {
     ...rawNode,
-    label: (rawNode as any)[labelField] as string,
+    label: rawNode[labelField] as string,
     value: tmNode.key
   }
 }

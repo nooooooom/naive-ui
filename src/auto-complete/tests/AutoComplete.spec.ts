@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { NAutoComplete, AutoCompleteProps } from '../index'
+import { NAutoComplete, type AutoCompleteProps } from '../index'
 
 describe('n-auto-complete', () => {
   it('should work with import on demand', () => {
@@ -95,6 +95,34 @@ describe('n-auto-complete', () => {
     })
     expect(document.querySelector('.n-auto-complete-menu')).toEqual(null)
     wrapper.find('input').setValue('a')
+    await wrapper.find('input').trigger('focus')
+    expect(document.querySelector('.n-auto-complete-menu')).not.toEqual(null)
+    wrapper.unmount()
+  })
+
+  it('should work with `append` prop and `getShow` prop', async () => {
+    const options: AutoCompleteProps['options'] = [
+      'gmail.com',
+      '163.com',
+      'qq.com'
+    ].map((suffix) => {
+      return {
+        label: suffix,
+        value: suffix
+      }
+    })
+    const wrapper = mount(NAutoComplete)
+    await wrapper.setProps({
+      getShow: (value: string | null) => {
+        if (value && value.endsWith('@')) {
+          return true
+        }
+        return false
+      },
+      options
+    })
+    expect(document.querySelector('.n-auto-complete-menu')).toEqual(null)
+    wrapper.find('input').setValue('@')
     await wrapper.find('input').trigger('focus')
     expect(document.querySelector('.n-auto-complete-menu')).not.toEqual(null)
     wrapper.unmount()

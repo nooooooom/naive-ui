@@ -8,11 +8,11 @@ import {
   vShow,
   watch,
   computed,
-  CSSProperties,
-  PropType,
+  type CSSProperties,
+  type PropType,
   toRef,
   onBeforeUnmount,
-  VNode,
+  type VNode,
   inject,
   normalizeStyle
 } from 'vue'
@@ -31,12 +31,13 @@ import {
 } from '../../_internal/icons'
 import { useConfig, useLocale, useTheme, useThemeClass } from '../../_mixins'
 import { NBaseIcon } from '../../_internal'
+import { download } from '../../_utils'
 import { NTooltip } from '../../tooltip'
 import { imageLight } from '../styles'
-import { prevIcon, nextIcon, closeIcon } from './icons'
+import { prevIcon, nextIcon, closeIcon, downloadIcon } from './icons'
 import {
   imageContextKey,
-  MoveStrategy,
+  type MoveStrategy,
   imagePreviewSharedProps
 } from './interface'
 import style from './styles/index.cssr'
@@ -89,6 +90,9 @@ export default defineComponent({
 
     function handleKeydown (e: KeyboardEvent): void {
       switch (e.key) {
+        case ' ':
+          e.preventDefault()
+          break
         case 'ArrowLeft':
           props.onPrev?.()
           break
@@ -141,14 +145,10 @@ export default defineComponent({
       } = opts
       const deltaHorizontal = mouseDownClientX - mouseUpClientX
       const deltaVertical = mouseDownClientY - mouseUpClientY
-      const moveVerticalDirection:
-      | 'verticalTop'
-      | 'verticalBottom' = `vertical${deltaVertical > 0 ? 'Top' : 'Bottom'}`
-      const moveHorizontalDirection:
-      | 'horizontalLeft'
-      | 'horizontalRight' = `horizontal${
-        deltaHorizontal > 0 ? 'Left' : 'Right'
-      }`
+      const moveVerticalDirection: 'verticalTop' | 'verticalBottom' =
+        `vertical${deltaVertical > 0 ? 'Top' : 'Bottom'}`
+      const moveHorizontalDirection: 'horizontalLeft' | 'horizontalRight' =
+        `horizontal${deltaHorizontal > 0 ? 'Left' : 'Right'}`
 
       return {
         moveVerticalDirection,
@@ -234,7 +234,7 @@ export default defineComponent({
     const imageContext = inject(imageContextKey, null)
 
     function handlePreviewMousedown (e: MouseEvent): void {
-      imageContext?.previewedImgPropsRef.value.onMousedown?.(e)
+      imageContext?.previewedImgPropsRef.value?.onMousedown?.(e)
       if (e.button !== 0) return
 
       const { clientX, clientY } = e
@@ -252,7 +252,7 @@ export default defineComponent({
       on('mouseup', document, handleMouseUp)
     }
     function handlePreviewDblclick (e: MouseEvent): void {
-      imageContext?.previewedImgPropsRef.value.onDblclick?.(e)
+      imageContext?.previewedImgPropsRef.value?.onDblclick?.(e)
       const originalImageSizeScale = getOrignalImageSizeScale()
       scale = scale === originalImageSizeScale ? 1 : originalImageSizeScale
       derivePreviewStyle()
@@ -334,12 +334,19 @@ export default defineComponent({
       }
     }
 
+    function handleDownloadClick (): void {
+      const src = previewSrcRef.value
+      if (src) {
+        download(src, undefined)
+      }
+    }
+
     function derivePreviewStyle (transition: boolean = true): void {
       const { value: preview } = previewRef
       if (!preview) return
       const { style } = preview
       const controlledStyle = normalizeStyle(
-        imageContext?.previewedImgPropsRef.value.style
+        imageContext?.previewedImgPropsRef.value?.style
       )
       let controlledStyleString = ''
       if (typeof controlledStyle === 'string') {
@@ -459,11 +466,12 @@ export default defineComponent({
         displayedRef.value = false
       },
       handleDragStart: (e: DragEvent) => {
-        imageContext?.previewedImgPropsRef.value.onDragstart?.(e)
+        imageContext?.previewedImgPropsRef.value?.onDragstart?.(e)
         e.preventDefault()
       },
       zoomIn,
       zoomOut,
+      handleDownloadClick,
       rotateCounterclockwise,
       rotateClockwise,
       handleSwitchPrev,
@@ -592,6 +600,15 @@ export default defineComponent({
                                   {{ default: () => <ZoomInIcon /> }}
                                 </NBaseIcon>,
                                 'tipZoomIn'
+                              )}
+                              {withTooltip(
+                                <NBaseIcon
+                                  clsPrefix={clsPrefix}
+                                  onClick={this.handleDownloadClick}
+                                >
+                                  {{ default: () => downloadIcon }}
+                                </NBaseIcon>,
+                                'tipDownload'
                               )}
                               {withTooltip(
                                 <NBaseIcon

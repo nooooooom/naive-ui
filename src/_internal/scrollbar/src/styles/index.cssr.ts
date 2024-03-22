@@ -20,6 +20,7 @@ export default cB('scrollbar', `
       width: 100%;
       overflow: scroll;
       height: 100%;
+      min-height: inherit;
       max-height: inherit;
       scrollbar-width: none;
     `, [
@@ -29,6 +30,7 @@ export default cB('scrollbar', `
         display: none;
       `),
       c('>', [
+        // We can't set overflow hidden since it affects positioning.
         cB('scrollbar-content', `
           box-sizing: border-box;
           min-width: 100%;
@@ -73,13 +75,12 @@ export default cB('scrollbar', `
       ]),
       cM('disabled', [
         c('>', [
-          cE('scrollbar', {
-            pointerEvents: 'none'
-          })
+          cE('scrollbar', 'pointer-events: none;')
         ])
       ]),
       c('>', [
         cE('scrollbar', `
+          z-index: 1;
           position: absolute;
           cursor: pointer;
           pointer-events: all;
@@ -87,9 +88,7 @@ export default cB('scrollbar', `
           transition: background-color .2s var(--n-scrollbar-bezier);
         `, [
           fadeInTransition(),
-          c('&:hover', {
-            backgroundColor: 'var(--n-scrollbar-color-hover)'
-          })
+          c('&:hover', 'background-color: var(--n-scrollbar-color-hover);')
         ])
       ])
     ])

@@ -1,10 +1,13 @@
-import { CheckStrategy, TreeNode } from 'treemate'
-import { HTMLAttributes, Ref, VNodeChild } from 'vue'
+import { type CheckStrategy, type TreeNode } from 'treemate'
+import { type HTMLAttributes, type Ref, type VNodeChild } from 'vue'
+import type { VirtualListScrollTo } from 'vueuc'
 import type { MergedTheme } from '../../_mixins'
 import { createInjectionKey } from '../../_utils'
 import type { TreeTheme } from '../styles'
 
 export type Key = string | number
+
+export type OnLoad = (node: TreeOption) => Promise<unknown>
 
 export interface TreeOptionBase {
   key?: Key
@@ -17,7 +20,7 @@ export interface TreeOptionBase {
   suffix?: () => VNodeChild
 }
 
-export type TreeOption = TreeOptionBase & { [k: string]: unknown }
+export type TreeOption = TreeOptionBase & Record<string, unknown>
 
 export type TreeOptions = TreeOption[]
 
@@ -38,6 +41,17 @@ export type RenderLabel = RenderTreePart
 export type RenderPrefix = RenderTreePart
 
 export type RenderSuffix = RenderTreePart
+
+export type TreeOverrideNodeClickBehaviorReturn =
+  | 'toggleSelect'
+  | 'toggleExpand'
+  | 'toggleCheck'
+  | 'default'
+  | 'none'
+
+export type TreeOverrideNodeClickBehavior = (info: {
+  option: TreeOption
+}) => TreeOverrideNodeClickBehaviorReturn
 
 export type TreeNodeProps = (info: {
   option: TreeOption
@@ -74,9 +88,10 @@ export interface InternalDropInfo {
   dropPosition: DropPosition
 }
 
-export type RenderSwitcherIcon = (options: {
+export type RenderSwitcherIcon = (props: {
   expanded: boolean
   selected: boolean
+  option: TreeOption
 }) => VNodeChild
 
 export type CheckOnClick = (option: TreeOption) => boolean
@@ -91,7 +106,7 @@ export interface TreeInjection {
   fNodesRef: Ref<Array<TreeNode<TreeOption>>>
   draggableRef: Ref<boolean>
   mergedThemeRef: Ref<MergedTheme<TreeTheme>>
-  onLoadRef: Ref<((node: TreeOption) => Promise<void>) | undefined>
+  onLoadRef: Ref<OnLoad | undefined>
   blockLineRef: Ref<boolean>
   indentRef: Ref<number>
   draggingNodeRef: Ref<TmNode | null>
@@ -119,6 +134,10 @@ export interface TreeInjection {
   internalTreeSelect: boolean
   checkOnClickRef: Ref<boolean | CheckOnClick>
   disabledFieldRef: Ref<string>
+  showLineRef: Ref<boolean>
+  overrideDefaultNodeClickBehaviorRef: Ref<
+  TreeOverrideNodeClickBehavior | undefined
+  >
   handleSwitcherClick: (node: TreeNode<TreeOption>) => void
   handleSelect: (node: TreeNode<TreeOption>) => void
   handleCheck: (node: TreeNode<TreeOption>, checked: boolean) => void
@@ -142,11 +161,15 @@ export interface MotionData {
 }
 
 export interface InternalTreeInst {
-  handleKeydown: (e: KeyboardEvent) => void
+  handleKeydown: (e: KeyboardEvent) => {
+    enterBehavior: TreeOverrideNodeClickBehaviorReturn | null
+  }
 }
 
 export interface TreeInst {
-  scrollTo: (options: { key: Key }) => void
-  getCheckedKeys: () => Key[]
-  getIndeterminateKeys: () => Key[]
+  scrollTo: VirtualListScrollTo
+  getCheckedData: () => { keys: Key[], options: Array<TreeOption | null> }
+  getIndeterminateData: () => { keys: Key[], options: Array<TreeOption | null> }
 }
+
+export type GetChildren = (option: any) => unknown

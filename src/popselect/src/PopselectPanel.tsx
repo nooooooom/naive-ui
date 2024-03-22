@@ -4,28 +4,28 @@ import {
   computed,
   defineComponent,
   inject,
-  PropType,
+  type PropType,
   toRef,
   watch,
   nextTick,
   watchEffect
 } from 'vue'
-import { createTreeMate, TreeNode } from 'treemate'
+import { createTreeMate, type TreeNode } from 'treemate'
 import { happensIn } from 'seemly'
 import {
-  NodeProps,
-  RenderLabel
+  type NodeProps,
+  type RenderLabel
 } from '../../_internal/select-menu/src/interface'
 import { createTmOptions } from '../../select/src/utils'
 import {
-  OnUpdateValue,
-  OnUpdateValueImpl,
-  Value,
-  SelectMixedOption,
-  SelectBaseOption,
-  SelectGroupOption,
-  SelectIgnoredOption,
-  ValueAtom
+  type OnUpdateValue,
+  type OnUpdateValueImpl,
+  type Value,
+  type SelectMixedOption,
+  type SelectBaseOption,
+  type SelectGroupOption,
+  type SelectIgnoredOption,
+  type ValueAtom
 } from '../../select/src/interface'
 import { useConfig, useTheme, useThemeClass } from '../../_mixins'
 import { NInternalSelectMenu } from '../../_internal'
@@ -125,7 +125,13 @@ export default defineComponent({
       toggle(tmNode.key)
     }
     function handleMenuMousedown (e: MouseEvent): void {
-      if (!happensIn(e, 'action')) e.preventDefault()
+      if (
+        !happensIn(e, 'action') &&
+        !happensIn(e, 'empty') &&
+        !happensIn(e, 'header')
+      ) {
+        e.preventDefault()
+      }
     }
     function toggle (value: ValueAtom): void {
       const {
@@ -229,6 +235,7 @@ export default defineComponent({
         showCheckmark={this.showCheckmark}
       >
         {{
+          header: () => this.$slots.header?.() || [],
           action: () => this.$slots.action?.() || [],
           empty: () => this.$slots.empty?.() || []
         }}

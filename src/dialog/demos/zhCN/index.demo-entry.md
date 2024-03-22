@@ -42,6 +42,7 @@ mask.vue
 action.vue
 use-dialog-reactive-list.vue
 focus-debug.vue
+rtl-debug.vue
 ```
 
 ## API
@@ -78,12 +79,13 @@ focus-debug.vue
 | loading | `boolean` | `false` | 是否显示 `loading` 状态 |  |
 | maskClosable | `boolean` | `true` | 是否可以通过点击 `mask` 关闭对话框 |  |
 | negativeButtonProps | `ButtonProps` | `undefined` | 取消按钮的属性 | 2.27.0 |
-| negativeText | `string` | `undefined` | 不填对应的按钮不会出现 |  |
+| negativeText | `string` | `undefined` | 取消按钮的文字，不填对应的按钮不会出现 |  |
 | positiveButtonProps | `ButtonProps` | `undefined` | 确认按钮的属性 | 2.27.0 |
-| positiveText | `string` | `undefined` | 不填对应的按钮不会出现 |  |
+| positiveText | `string` | `undefined` | 确认按钮的文字，不填对应的按钮不会出现 |  |
 | showIcon | `boolean` | `true` | 是否显示 `icon` |  |
-| style | `string \| Object` | 样式 |  |
+| style | `string \| Object` | `undefined` | 样式 |  |
 | title | `string \| (() => VNodeChild)` | `undefined` | 标题，可以是 `render` 函数 |  |
+| transformOrigin | `'mouse' \| 'center'` | `'mouse'` | 对话框动画出现的位置 | 2.34.0 |
 | type | `'error \| 'success' \| 'warning'` | `'warning'` | 对话框类型 |  |
 | onAfterEnter | `() => void` | `undefined` | 出现动画完成执行的回调 | 2.33.0 |
 | onAfterLeave | `() => void` | `undefined` | 关闭动画完成执行的回调 | 2.33.3 |
@@ -110,12 +112,13 @@ focus-debug.vue
 | loading | `boolean` | 是否显示 `loading` 状态 |  |
 | maskClosable | `boolean` | 是否可以通过点击 `mask` 关闭对话框 |  |
 | negativeButtonProps | `ButtonProps` | 取消按钮的属性 | 2.27.0 |
-| negativeText | `string` | 不填对应的按钮不会出现 |  |
+| negativeText | `string` | 取消按钮的文字，不填对应的按钮不会出现 |  |
 | positiveButtonProps | `ButtonProps` | 确认按钮的属性 | 2.27.0 |
-| positiveText | `string` | 不填对应的按钮不会出现 |  |
+| positiveText | `string` | 确认按钮的文字，不填对应的按钮不会出现 |  |
 | showIcon | `boolean` | 是否显示 `icon` |  |
 | style | `string \| Object` | 样式 |  |
 | title | `string \| (() => VNodeChild)` | 可以是 `render` 函数 |  |
+| transformOrigin | `'mouse' \| 'center'` | 对话框动画出现的位置 | 2.34.0 |
 | type | `'error \| 'success' \| 'warning'` | 对话框类型 |  |
 | onAfterEnter | `() => void \| undefined` | 出现动画完成执行的回调 | 2.33.0 |
 | onAfterLeave | `() => void \| undefined` | 关闭动画完成执行的回调 | 2.33.3 |
@@ -134,9 +137,13 @@ focus-debug.vue
 
 | 名称 | 类型 | 默认值 | 说明 | 版本 |
 | --- | --- | --- | --- | --- |
+| action-class | `string` | `undefined` | 操作区域的类名 | NEXT_VERSION |
+| action-style | `Object \| string` | `undefined` | 操作区域的样式 | NEXT_VERSION |
 | bordered | `boolean` | `false` | 是否显示 `border` |  |
 | closable | `boolean` | `true` | 是否显示 `close` 图标 |  |
 | content | `string \| (() => VNodeChild)` | `undefined` | 对话框内容，可以是 `render` 函数 |  |
+| content-class | `string` | `undefined` | 内容的类名 | NEXT_VERSION |
+| content-style | `Object \| string` | `undefined` | 内容的样式 | NEXT_VERSION |
 | icon-placement | `'left' \| 'top'` | `'left'` | 图标放置的位置 |  |
 | icon | `() => VNodeChild` | `undefined` | 需要是 `render` 函数 |  |
 | loading | `boolean` | `false` | 是否显示 `loading` 状态 |  |
@@ -146,6 +153,8 @@ focus-debug.vue
 | positive-text | `string` | `undefined` | 确认按钮的文字，不填对应的按钮不会出现 |  |
 | show-icon | `boolean` | `true` | 是否显示 `icon` |  |
 | title | `string \| (() => VNodeChild)` | `undefined` | 对话框标题，可以是 `render` 函数 |  |
+| title-class | `string` | `undefined` | 标题的类名 | NEXT_VERSION |
+| title-style | `Object \| string` | `undefined` | 标题的样式 | NEXT_VERSION |
 | type | `'error \| 'success' \| 'warning' \| 'info'` | `'warning'` | 对话框类型 |  |
 | on-close | `() => void` | `undefined` | 点击关闭时执行的回调函数 |  |
 | on-negative-click | `(e: MouseEvent) => void` | `undefined` | 执行 `negative` 时执行的回调函数 |  |
@@ -153,9 +162,10 @@ focus-debug.vue
 
 ### Dialog Slots
 
-| 名称    | 参数 | 说明          |
-| ------- | ---- | ------------- |
-| action  | `()` | `action` 内容 |
-| default | `()` | 对话框内容    |
-| header  | `()` | `header` 内容 |
-| icon    | `()` | `icon` 内容   |
+| 名称    | 参数 | 说明          | 版本   |
+| ------- | ---- | ------------- | ------ |
+| action  | `()` | `action` 内容 |        |
+| default | `()` | 对话框内容    |        |
+| header  | `()` | `header` 内容 |        |
+| icon    | `()` | `icon` 内容   |        |
+| close   | `()` | `close` 内容  | 2.36.0 |

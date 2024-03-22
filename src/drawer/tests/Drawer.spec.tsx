@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style */
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { NButton } from '../../button'
 import {
-  DrawerContentProps,
-  DrawerProps,
+  type DrawerContentProps,
+  type DrawerProps,
   NDrawer,
   NDrawerContent
 } from '../index'
@@ -126,12 +127,12 @@ describe('n-drawer', () => {
   })
 
   it('should work with `show` prop', async () => {
-    const wrapper1 = await mountDrawer({
+    const wrapper1 = mountDrawer({
       show: false
     })
     expect(document.querySelector('.n-drawer')).toEqual(null)
     wrapper1.unmount()
-    const wrapper2 = await mountDrawer({
+    const wrapper2 = mountDrawer({
       show: true
     })
     expect(document.querySelector('.n-drawer')).not.toEqual(null)
@@ -156,7 +157,7 @@ describe('n-drawer', () => {
     const onUpdate = jest.fn()
     const mousedownEvent = new MouseEvent('mousedown', { bubbles: true })
     const mouseupEvent = new MouseEvent('mouseup', { bubbles: true })
-    const wrapper = await mountDrawer({
+    const wrapper = mountDrawer({
       show: true,
       hasOnUpdateShow: true,
       drawerProps: { onUpdateShow: onUpdate },
@@ -171,7 +172,7 @@ describe('n-drawer', () => {
   })
 
   it('should work with `header-style` prop', async () => {
-    const wrapper = await mountDrawer({
+    const wrapper = mountDrawer({
       drawerContentProps: {
         title: 'test',
         headerStyle: { backgroundColor: 'red' }
@@ -188,7 +189,7 @@ describe('n-drawer', () => {
   })
 
   it('should work with `body-style` prop', async () => {
-    const wrapper = await mountDrawer({
+    const wrapper = mountDrawer({
       drawerContentProps: {
         title: 'test',
         bodyStyle: { backgroundColor: 'red' }
@@ -223,7 +224,7 @@ describe('n-drawer', () => {
       value: 251
     })
     // placement top
-    let wrapper = await mountDrawer({
+    let wrapper = mountDrawer({
       show: true,
       drawerProps: { placement: 'top', resizable: true, defaultHeight: 251 }
     })
@@ -260,7 +261,7 @@ describe('n-drawer', () => {
     wrapper.unmount()
 
     // placement bottom
-    wrapper = await mountDrawer({
+    wrapper = mountDrawer({
       show: true,
       drawerProps: { placement: 'bottom', resizable: true, defaultHeight: 251 }
     })
@@ -297,7 +298,7 @@ describe('n-drawer', () => {
     wrapper.unmount()
 
     // placement left
-    wrapper = await mountDrawer({
+    wrapper = mountDrawer({
       show: true,
       drawerProps: { placement: 'left', resizable: true, defaultWidth: 251 }
     })
@@ -334,7 +335,7 @@ describe('n-drawer', () => {
     wrapper.unmount()
 
     // placement right
-    wrapper = await mountDrawer({
+    wrapper = mountDrawer({
       show: true,
       drawerProps: { placement: 'right', resizable: true, defaultWidth: 251 }
     })

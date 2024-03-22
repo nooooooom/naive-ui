@@ -450,6 +450,10 @@ export const enComponentRoutes = [
     component: () => import('../../src/space/demos/enUS/index.demo-entry.md')
   },
   {
+    path: 'flex',
+    component: () => import('../../src/flex/demos/enUS/index.demo-entry.md')
+  },
+  {
     path: 'rate',
     component: () => import('../../src/rate/demos/enUS/index.demo-entry.md')
   },
@@ -534,6 +538,29 @@ export const enComponentRoutes = [
   {
     path: 'equation',
     component: () => import('../../src/equation/demos/enUS/index.demo-entry.md')
+  },
+  {
+    path: 'qr-code',
+    component: () => import('../../src/qr-code/demos/enUS/index.demo-entry.md')
+  },
+  {
+    path: 'virtual-list',
+    component: () =>
+      import('../../src/virtual-list/demos/enUS/index.demo-entry.md')
+  },
+  {
+    path: 'split',
+    component: () => import('../../src/split/demos/enUS/index.demo-entry.md')
+  },
+  {
+    path: 'infinite-scroll',
+    component: () =>
+      import('../../src/infinite-scroll/demos/enUS/index.demo-entry.md')
+  },
+  {
+    path: 'float-button',
+    component: () =>
+      import('../../src/float-button/demos/enUS/index.demo-entry.md')
   }
 ]
 
@@ -827,6 +854,10 @@ export const zhComponentRoutes = [
     component: () => import('../../src/space/demos/zhCN/index.demo-entry.md')
   },
   {
+    path: 'flex',
+    component: () => import('../../src/flex/demos/zhCN/index.demo-entry.md')
+  },
+  {
     path: 'rate',
     component: () => import('../../src/rate/demos/zhCN/index.demo-entry.md')
   },
@@ -911,6 +942,29 @@ export const zhComponentRoutes = [
   {
     path: 'equation',
     component: () => import('../../src/equation/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'qr-code',
+    component: () => import('../../src/qr-code/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'virtual-list',
+    component: () =>
+      import('../../src/virtual-list/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'split',
+    component: () => import('../../src/split/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'infinite-scroll',
+    component: () =>
+      import('../../src/infinite-scroll/demos/zhCN/index.demo-entry.md')
+  },
+  {
+    path: 'float-button',
+    component: () =>
+      import('../../src/float-button/demos/zhCN/index.demo-entry.md')
   }
 ]
 

@@ -1,6 +1,10 @@
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { NPagination, PaginationRenderLabel } from '../index'
+import {
+  NPagination,
+  type PaginationRenderLabel,
+  type PaginationInfo
+} from '../index'
 
 describe('n-pagination', () => {
   it('should work with import on demand', () => {
@@ -19,6 +23,7 @@ describe('n-pagination', () => {
 
     await wrapper.setProps({ size: 'large' })
     expect(wrapper.attributes('style')).toContain('--n-item-size: 34px;')
+    wrapper.unmount()
   })
   it('props.itemCount', async () => {
     const wrapper = mount(NPagination, {
@@ -32,6 +37,38 @@ describe('n-pagination', () => {
       itemCount: 11
     })
     expect(wrapper.findAll('.n-pagination-item').length).toEqual(4)
+    wrapper.unmount()
+  })
+  it('should work with corrent pagination info', async () => {
+    let paginationInfo: PaginationInfo | undefined
+    const wrapper = mount(NPagination, {
+      props: {
+        itemCount: 1,
+        pageSize: 10,
+        prefix: (info: PaginationInfo) => {
+          paginationInfo = info
+        }
+      }
+    })
+    expect(wrapper.findAll('.n-pagination-item').length).toEqual(3)
+    expect(paginationInfo?.itemCount).toBe(1)
+    expect(paginationInfo?.page).toBe(1)
+    expect(paginationInfo?.pageCount).toBe(1)
+    expect(paginationInfo?.pageSize).toBe(10)
+    expect(paginationInfo?.startIndex).toBe(0)
+    expect(paginationInfo?.endIndex).toBe(0)
+    await wrapper.setProps({
+      itemCount: 12,
+      pageSize: 5,
+      page: 3
+    })
+    expect(paginationInfo?.itemCount).toBe(12)
+    expect(paginationInfo?.pageSize).toBe(5)
+    expect(paginationInfo?.page).toBe(3)
+    expect(paginationInfo?.pageCount).toBe(3)
+    expect(paginationInfo?.startIndex).toBe(10)
+    expect(paginationInfo?.endIndex).toBe(11)
+    wrapper.unmount()
   })
   it('should work with prev slot', async () => {
     const wrapper = mount(NPagination, {
@@ -40,6 +77,7 @@ describe('n-pagination', () => {
       }
     })
     expect(wrapper.find('.n-pagination-item').text()).toContain('Prev')
+    wrapper.unmount()
   })
   it('page-sizes should has correct type', () => {
     ;<NPagination
@@ -59,6 +97,7 @@ describe('n-pagination', () => {
     expect(wrapper.find('.n-base-selection-input__content').text()).toContain(
       '23'
     )
+    wrapper.unmount()
   })
 })
 it('should work with label slot', async () => {
@@ -75,4 +114,5 @@ it('should work with label slot', async () => {
     itemCount: 1
   })
   expect(wrapper.findAll('.n-pagination-item')[1].text()).toContain('(1)')
+  wrapper.unmount()
 })

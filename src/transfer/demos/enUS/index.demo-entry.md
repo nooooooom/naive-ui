@@ -20,15 +20,17 @@ render-source-list.vue
 
 | Name | Type | Default | Description | Version |
 | --- | --- | --- | --- | --- |
+| clear-text | `string` | `undefined` | Text of clear button. | 2.35.0 |
 | default-value | `Array<string \| number> \| null` | `null` | Default value. | 2.32.0 |
 | disabled | `boolean` | `true` | Disabled state. | 2.32.0 |
 | filter | `(pattern: string, option: TransferOption, from: 'source' \| 'target') => boolean` | A basic label string match function. | 2.32.0, `from` 2.32.2 |
-| show-selected | `boolean` | `true` | Whether to show the selected in the source list. | NEXT_VERSION |
 | options | `TransferOption[]` | `[]` | For configuration options, see the TransferOption Type below. | 2.32.0 |
 | render-source-label | `(props: { option: TransferOption }) => VNodeChild` | `undefined` | Customize source label rendering. | 2.32.0 |
 | render-target-label | `(props: { option: TransferOption }) => VNodeChild` | `undefined` | Customize target label rendering. | 2.32.0 |
 | render-source-list | `(props: { onCheck: (checkedValueList: Array<string \| number>) => void, checkedOptions: TransferOption[], pattern: string }) => VNodeChild` | `undefined` | Customize source list rendering. | 2.32.0 |
 | render-target-list | `(props: { onCheck: (checkedValueList: Array<string \| number>) => void, checkedOptions: TransferOption[], pattern: string }) => VNodeChild` | `undefined` | Customize target list rendering. | 2.33.4 |
+| select-all-text | `string` | `undefined` | Text of select all button. | 2.35.0 |
+| show-selected | `boolean` | `true` | Whether to show selected options in the source list. | 2.34.0 |
 | size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size. | 2.32.0 |
 | source-filterable | `boolean` | `false` | The source filterable state. | 2.32.2 |
 | source-filter-placeholder | `string` | `undefined` | Placeholder for the source items search box. | 2.32.0 |

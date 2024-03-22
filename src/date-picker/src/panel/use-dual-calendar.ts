@@ -1,4 +1,4 @@
-import { inject, computed, watch, ref, ExtractPropTypes } from 'vue'
+import { inject, computed, watch, ref, type ExtractPropTypes } from 'vue'
 import {
   addMonths,
   format,
@@ -13,27 +13,28 @@ import {
   getTime,
   startOfQuarter
 } from 'date-fns/esm'
-import { VirtualListInst } from 'vueuc'
+import type { VirtualListInst } from 'vueuc'
 import {
   dateArray,
-  DateItem,
-  MonthItem,
-  YearItem,
+  type DateItem,
+  type MonthItem,
+  type YearItem,
   strictParse,
   yearArray,
   monthArray,
   getDefaultTime,
   pluckValueFromRange,
-  QuarterItem,
+  type QuarterItem,
   quarterArray
 } from '../utils'
 import { usePanelCommon, usePanelCommonProps } from './use-panel-common'
 import {
   datePickerInjectionKey,
-  RangePanelChildComponentRefs,
-  Shortcuts
+  type IsRangeDateDisabled,
+  type RangePanelChildComponentRefs,
+  type Shortcuts
 } from '../interface'
-import { ScrollbarInst } from '../../../_internal'
+import type { ScrollbarInst } from '../../../_internal'
 import { MONTH_ITEM_HEIGHT, START_YEAR } from '../config'
 
 const useDualCalendarProps = {
@@ -77,7 +78,10 @@ function useDualCalendar (
     closeOnSelectRef,
     updateValueOnCloseRef,
     firstDayOfWeekRef,
-    datePickerSlots
+    datePickerSlots,
+    monthFormatRef,
+    yearFormatRef,
+    quarterFormatRef
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   } = inject(datePickerInjectionKey)!
   const validation = {
@@ -220,26 +224,38 @@ function useDualCalendar (
     return shortcuts || rangesRef.value
   })
   const startYearArrayRef = computed(() => {
-    return yearArray(pluckValueFromRange(props.value, 'start'), nowRef.value)
+    return yearArray(pluckValueFromRange(props.value, 'start'), nowRef.value, {
+      yearFormat: yearFormatRef.value
+    })
   })
   const endYearArrayRef = computed(() => {
-    return yearArray(pluckValueFromRange(props.value, 'end'), nowRef.value)
+    return yearArray(pluckValueFromRange(props.value, 'end'), nowRef.value, {
+      yearFormat: yearFormatRef.value
+    })
   })
   const startQuarterArrayRef = computed(() => {
     const startValue = pluckValueFromRange(props.value, 'start')
-    return quarterArray(startValue ?? Date.now(), startValue, nowRef.value)
+    return quarterArray(startValue ?? Date.now(), startValue, nowRef.value, {
+      quarterFormat: quarterFormatRef.value
+    })
   })
   const endQuarterArrayRef = computed(() => {
     const endValue = pluckValueFromRange(props.value, 'end')
-    return quarterArray(endValue ?? Date.now(), endValue, nowRef.value)
+    return quarterArray(endValue ?? Date.now(), endValue, nowRef.value, {
+      quarterFormat: quarterFormatRef.value
+    })
   })
   const startMonthArrayRef = computed(() => {
     const startValue = pluckValueFromRange(props.value, 'start')
-    return monthArray(startValue ?? Date.now(), startValue, nowRef.value)
+    return monthArray(startValue ?? Date.now(), startValue, nowRef.value, {
+      monthFormat: monthFormatRef.value
+    })
   })
   const endMonthArrayRef = computed(() => {
     const endValue = pluckValueFromRange(props.value, 'end')
-    return monthArray(endValue ?? Date.now(), endValue, nowRef.value)
+    return monthArray(endValue ?? Date.now(), endValue, nowRef.value, {
+      monthFormat: monthFormatRef.value
+    })
   })
   watch(
     computed(() => props.value),
@@ -351,20 +367,20 @@ function useDualCalendar (
   function mergedIsDateDisabled (ts: number): boolean {
     const isDateDisabled = isDateDisabledRef.value
     if (!isDateDisabled) return false
-    if (!Array.isArray(props.value)) return isDateDisabled(ts, 'start', null)
+    if (!Array.isArray(props.value)) { return (isDateDisabled as IsRangeDateDisabled)(ts, 'start', null) }
     if (selectingPhaseRef.value === 'start') {
       // before you really start to select
-      return isDateDisabled(ts, 'start', null)
+      return (isDateDisabled as IsRangeDateDisabled)(ts, 'start', null)
     } else {
       const { value: memorizedStartDateTime } = memorizedStartDateTimeRef
       // after you starting to select
       if (ts < memorizedStartDateTimeRef.value) {
-        return isDateDisabled(ts, 'start', [
+        return (isDateDisabled as IsRangeDateDisabled)(ts, 'start', [
           memorizedStartDateTime,
           memorizedStartDateTime
         ])
       } else {
-        return isDateDisabled(ts, 'end', [
+        return (isDateDisabled as IsRangeDateDisabled)(ts, 'end', [
           memorizedStartDateTime,
           memorizedStartDateTime
         ])
@@ -788,18 +804,18 @@ function useDualCalendar (
   function handleEndYearVlScroll (): void {
     endYearScrollbarRef.value?.sync()
   }
-  function virtualListContainer (type: 'start' | 'end'): HTMLElement {
+  function virtualListContainer (type: 'start' | 'end'): HTMLElement | null {
     if (type === 'start') {
-      return startYearVlRef.value?.listElRef as HTMLElement
+      return startYearVlRef.value?.listElRef || null
     } else {
-      return endYearVlRef.value?.listElRef as HTMLElement
+      return endYearVlRef.value?.listElRef || null
     }
   }
-  function virtualListContent (type: 'start' | 'end'): HTMLElement {
+  function virtualListContent (type: 'start' | 'end'): HTMLElement | null {
     if (type === 'start') {
-      return startYearVlRef.value?.itemsElRef as HTMLElement
+      return startYearVlRef.value?.itemsElRef || null
     } else {
-      return endYearVlRef.value?.itemsElRef as HTMLElement
+      return endYearVlRef.value?.itemsElRef || null
     }
   }
   const childComponentRefs: RangePanelChildComponentRefs = {

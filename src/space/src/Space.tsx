@@ -1,4 +1,11 @@
-import { h, defineComponent, computed, PropType, CSSProperties } from 'vue'
+import {
+  h,
+  defineComponent,
+  computed,
+  type PropType,
+  type CSSProperties,
+  Comment
+} from 'vue'
 import { depx, getGap } from 'seemly'
 import { createKey, flatten, getSlot } from '../../_utils'
 import type { ExtractPublicPropTypes } from '../../_utils'
@@ -35,6 +42,7 @@ export const spaceProps = {
   },
   inline: Boolean,
   vertical: Boolean,
+  reverse: Boolean,
   size: {
     type: [String, Number, Array] as PropType<
     'small' | 'medium' | 'large' | number | [number, number]
@@ -45,6 +53,7 @@ export const spaceProps = {
     type: Boolean,
     default: true
   },
+  itemClass: String,
   itemStyle: [String, Object] as PropType<string | CSSProperties>,
   wrap: {
     type: Boolean,
@@ -105,9 +114,11 @@ export default defineComponent({
   render () {
     const {
       vertical,
+      reverse,
       align,
       inline,
       justify,
+      itemClass,
       itemStyle,
       margin,
       wrap,
@@ -117,7 +128,7 @@ export default defineComponent({
       wrapItem,
       internalUseGap
     } = this
-    const children = flatten(getSlot(this))
+    const children = flatten(getSlot(this), false)
     if (!children.length) return null
     const horizontalMargin = `${margin.horizontal}px`
     const semiHorizontalMargin = `${margin.horizontal / 2}px`
@@ -134,7 +145,12 @@ export default defineComponent({
         ]}
         style={{
           display: inline ? 'inline-flex' : 'flex',
-          flexDirection: vertical ? 'column' : 'row',
+          flexDirection: (() => {
+            if (vertical && !reverse) return 'column'
+            if (vertical && reverse) return 'column-reverse'
+            if (!vertical && reverse) return 'row-reverse'
+            /** (!vertical && !reverse) */ else return 'row'
+          })(),
           justifyContent: ['start', 'end'].includes(justify)
             ? 'flex-' + justify
             : justify,
@@ -147,58 +163,66 @@ export default defineComponent({
       >
         {!wrapItem && (useGap || internalUseGap)
           ? children
-          : children.map((child, index) => (
-              <div
-                role="none"
-                style={[
-                  itemStyle as any,
-                  {
-                    maxWidth: '100%'
-                  },
-                  useGap
-                    ? ''
-                    : vertical
-                      ? {
-                          marginBottom: index !== lastIndex ? verticalMargin : ''
-                        }
-                      : rtlEnabled
+          : children.map((child, index) =>
+            child.type === Comment ? (
+              child
+            ) : (
+                <div
+                  role="none"
+                  class={itemClass}
+                  style={[
+                    itemStyle as any,
+                    {
+                      maxWidth: '100%'
+                    },
+                    useGap
+                      ? ''
+                      : vertical
                         ? {
-                            marginLeft: isJustifySpace
-                              ? justify === 'space-between' && index === lastIndex
-                                ? ''
-                                : semiHorizontalMargin
-                              : index !== lastIndex
-                                ? horizontalMargin
-                                : '',
-                            marginRight: isJustifySpace
-                              ? justify === 'space-between' && index === 0
-                                ? ''
-                                : semiHorizontalMargin
-                              : '',
-                            paddingTop: semiVerticalMargin,
-                            paddingBottom: semiVerticalMargin
+                            marginBottom:
+                              index !== lastIndex ? verticalMargin : ''
                           }
-                        : {
-                            marginRight: isJustifySpace
-                              ? justify === 'space-between' && index === lastIndex
-                                ? ''
-                                : semiHorizontalMargin
-                              : index !== lastIndex
-                                ? horizontalMargin
+                        : rtlEnabled
+                          ? {
+                              marginLeft: isJustifySpace
+                                ? justify === 'space-between' &&
+                                  index === lastIndex
+                                  ? ''
+                                  : semiHorizontalMargin
+                                : index !== lastIndex
+                                  ? horizontalMargin
+                                  : '',
+                              marginRight: isJustifySpace
+                                ? justify === 'space-between' && index === 0
+                                  ? ''
+                                  : semiHorizontalMargin
                                 : '',
-                            marginLeft: isJustifySpace
-                              ? justify === 'space-between' && index === 0
-                                ? ''
-                                : semiHorizontalMargin
-                              : '',
-                            paddingTop: semiVerticalMargin,
-                            paddingBottom: semiVerticalMargin
-                          }
-                ]}
-              >
-                {child}
-              </div>
-          ))}
+                              paddingTop: semiVerticalMargin,
+                              paddingBottom: semiVerticalMargin
+                            }
+                          : {
+                              marginRight: isJustifySpace
+                                ? justify === 'space-between' &&
+                                  index === lastIndex
+                                  ? ''
+                                  : semiHorizontalMargin
+                                : index !== lastIndex
+                                  ? horizontalMargin
+                                  : '',
+                              marginLeft: isJustifySpace
+                                ? justify === 'space-between' && index === 0
+                                  ? ''
+                                  : semiHorizontalMargin
+                                : '',
+                              paddingTop: semiVerticalMargin,
+                              paddingBottom: semiVerticalMargin
+                            }
+                  ]}
+                >
+                  {child}
+                </div>
+            )
+          )}
       </div>
     )
   }

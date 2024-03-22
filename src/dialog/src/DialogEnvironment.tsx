@@ -1,6 +1,6 @@
 // use absolute path to make sure no circular ref of style
 // this -> modal-index -> modal-style
-import { h, defineComponent, PropType, ref, CSSProperties } from 'vue'
+import { h, defineComponent, type PropType, ref, type CSSProperties } from 'vue'
 import NModal from '../../modal/src/Modal'
 import { keep } from '../../_utils'
 import { NDialog } from './Dialog'
@@ -10,6 +10,7 @@ export const exposedDialogEnvProps = {
   ...dialogProps,
   onAfterEnter: Function as PropType<() => void>,
   onAfterLeave: Function as PropType<() => void>,
+  transformOrigin: String as PropType<'center' | 'mouse'>,
   blockScroll: { type: Boolean, default: true },
   closeOnEsc: { type: Boolean, default: true },
   onEsc: Function as PropType<() => void>,
@@ -144,6 +145,7 @@ export const NDialogEnvironment = defineComponent({
         closeOnEsc={this.closeOnEsc}
         blockScroll={this.blockScroll}
         autoFocus={this.autoFocus}
+        transformOrigin={this.transformOrigin}
         internalAppear
         internalDialog
       >

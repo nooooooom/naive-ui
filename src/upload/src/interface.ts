@@ -1,5 +1,5 @@
-import { Ref, CSSProperties, VNodeChild } from 'vue'
-import { ImageGroupProps } from '../../image'
+import { type Ref, type CSSProperties, type VNodeChild } from 'vue'
+import { type ImageGroupProps } from '../../image'
 import type { MergedTheme } from '../../_mixins'
 import { createInjectionKey } from '../../_utils'
 import type { UploadTheme } from '../styles'
@@ -21,9 +21,9 @@ export type SettledFileInfo = Required<FileInfo>
 
 export type ShouldUseThumbnailUrl = (file: SettledFileInfo) => boolean
 
-export type FuncOrRecordOrUndef =
-  | Record<string, string>
-  | (({ file }: { file: SettledFileInfo }) => Record<string, string>)
+export type FuncOrRecordOrUndef<T = string> =
+  | Record<string, T>
+  | (({ file }: { file: SettledFileInfo }) => Record<string, T>)
   | undefined
 
 export type OnChange = (data: {
@@ -44,6 +44,7 @@ export type OnFinish = ({
 export type OnRemove = (data: {
   file: SettledFileInfo
   fileList: SettledFileInfo[]
+  index: number
 }) => Promise<boolean> | boolean | any
 
 export type OnDownload = (
@@ -88,6 +89,7 @@ export interface UploadInjection {
   listTypeRef: Ref<ListType>
   dragOverRef: Ref<boolean>
   draggerInsideRef: { value: boolean }
+  fileListClassRef: Ref<string | undefined>
   fileListStyleRef: Ref<string | CSSProperties | undefined>
   mergedDisabledRef: Ref<boolean>
   maxReachedRef: Ref<boolean>
@@ -97,12 +99,15 @@ export interface UploadInjection {
   themeClassRef: undefined | Ref<string>
   mergedDirectoryDndRef: Ref<boolean>
   acceptRef: Ref<string | undefined>
+  triggerClassRef: Ref<string | undefined>
   triggerStyleRef: Ref<CSSProperties | string | undefined>
   doChange: DoChange
   onRender: undefined | (() => void)
   submit: (fileId?: string) => void
   shouldUseThumbnailUrlRef: Ref<ShouldUseThumbnailUrl>
-  getFileThumbnailUrl: (file: SettledFileInfo) => Promise<string>
+  getFileThumbnailUrlResolver: (
+    file: SettledFileInfo
+  ) => Promise<string> | string
   renderIconRef: Ref<RenderIcon | undefined>
   handleFileAddition: (files: FileAndEntry[] | null, e?: Event) => void
   openOpenFileDialog: () => void
@@ -137,13 +142,13 @@ export type OnPreview = (file: SettledFileInfo) => void
 export type CreateThumbnailUrl = (
   file: File | null,
   fileInfo: SettledFileInfo
-) => Promise<string>
+) => Promise<string> | string | undefined
 
 export interface CustomRequestOptions {
   file: SettledFileInfo
   action?: string
   withCredentials?: boolean
-  data?: FuncOrRecordOrUndef
+  data?: FuncOrRecordOrUndef<string | Blob>
   headers?: FuncOrRecordOrUndef
   onProgress: (e: { percent: number }) => void
   onFinish: () => void

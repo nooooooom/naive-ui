@@ -1,6 +1,6 @@
-import { defineComponent, h, PropType, computed } from 'vue'
+import { defineComponent, h, type PropType, computed } from 'vue'
 import { hsv2rgb, hsva, toRgbaString } from 'seemly'
-import { ColorPickerMode, convertColor, getModeFromValue } from './utils'
+import { type ColorPickerMode, convertColor, getModeFromValue } from './utils'
 import { warn } from '../../_utils'
 
 // Try to normalize the color values to ensure that they are valid CSS colors
@@ -16,9 +16,10 @@ function normalizeColor (color: string, mode: ColorPickerMode | null): string {
 }
 
 function getHexFromName (color: string): string {
-  const ctx = document
-    .createElement('canvas')
-    .getContext('2d') as CanvasRenderingContext2D
+  const ctx = document.createElement('canvas').getContext('2d')
+  if (!ctx) {
+    return '#000000'
+  }
   ctx.fillStyle = color
   return ctx.fillStyle
 }
@@ -104,8 +105,12 @@ export default defineComponent({
           <div
             class={`${clsPrefix}-color-picker-swatch`}
             tabindex={0}
-            onClick={() => this.handleSwatchSelect(swatch)}
-            onKeydown={(e) => this.handleSwatchKeyDown(e, swatch)}
+            onClick={() => {
+              this.handleSwatchSelect(swatch)
+            }}
+            onKeydown={(e) => {
+              this.handleSwatchKeyDown(e, swatch)
+            }}
           >
             <div
               class={`${clsPrefix}-color-picker-swatch__fill`}

@@ -1,4 +1,4 @@
-import { h, defineComponent, PropType, ref, computed, inject } from 'vue'
+import { h, defineComponent, type PropType, ref, computed, inject } from 'vue'
 import { NCheckbox, NCheckboxGroup } from '../../../checkbox'
 import { NRadio, NRadioGroup } from '../../../radio'
 import { NButton } from '../../../button'
@@ -6,12 +6,13 @@ import { NScrollbar } from '../../../_internal'
 import { shouldUseArrayInSingleMode } from '../utils'
 import {
   dataTableInjectionKey,
-  FilterOption,
-  FilterOptionValue,
-  OnFilterMenuChange,
-  OnFilterMenuChangeImpl,
-  TableBaseColumn
+  type FilterOption,
+  type FilterOptionValue,
+  type OnFilterMenuChange,
+  type OnFilterMenuChangeImpl,
+  type TableBaseColumn
 } from '../interface'
+import { useConfig, useRtl } from '../../../_mixins'
 
 export default defineComponent({
   name: 'DataTableFilterMenu',
@@ -52,6 +53,14 @@ export default defineComponent({
     }
   },
   setup (props) {
+    const { mergedClsPrefixRef: mergedClsPrefixRefRtl, mergedRtlRef } =
+      useConfig(props)
+    const rtlEnabledRef = useRtl(
+      'DataTable',
+      mergedRtlRef,
+      mergedClsPrefixRefRtl
+    )
+
     const {
       mergedClsPrefixRef,
       mergedThemeRef,
@@ -114,6 +123,7 @@ export default defineComponent({
     }
     return {
       mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       mergedTheme: mergedThemeRef,
       locale: localeRef,
       checkboxGroupValue: checkboxGroupValueRef,
@@ -126,7 +136,12 @@ export default defineComponent({
   render () {
     const { mergedTheme, locale, mergedClsPrefix } = this
     return (
-      <div class={`${mergedClsPrefix}-data-table-filter-menu`}>
+      <div
+        class={[
+          `${mergedClsPrefix}-data-table-filter-menu`,
+          this.rtlEnabled && `${mergedClsPrefix}-data-table-filter-menu--rtl`
+        ]}
+      >
         <NScrollbar>
           {{
             default: () => {

@@ -2,25 +2,25 @@
 import {
   defineComponent,
   h,
-  PropType,
+  type PropType,
   ref,
   toRef,
   nextTick,
   computed,
   Transition,
-  CSSProperties
+  type CSSProperties
 } from 'vue'
-import { createTreeMate, TreeNode } from 'treemate'
+import { createTreeMate, type TreeNode } from 'treemate'
 import {
   VBinder,
   VFollower,
   VTarget,
-  FollowerInst,
-  FollowerPlacement
+  type FollowerInst,
+  type FollowerPlacement
 } from 'vueuc'
 import { useIsMounted, useMergedState } from 'vooks'
 import type { FormValidationStatus } from '../../form/src/interface'
-import { RenderLabel } from '../../_internal/select-menu/src/interface'
+import type { RenderLabel } from '../../_internal/select-menu/src/interface'
 import type { Size as InputSize } from '../../input/src/interface'
 import { NInput } from '../../input'
 import type { InputInst } from '../../input'
@@ -50,6 +50,21 @@ export const mentionProps = {
   options: {
     type: Array as PropType<MentionOption[]>,
     default: []
+  },
+  filter: {
+    type: Function as PropType<
+    (pattern: string, option: MentionOption) => boolean
+    >,
+    default: (pattern: string, option: MentionOption) => {
+      if (!pattern) return true
+      if (typeof option.label === 'string') {
+        return option.label.startsWith(pattern)
+      }
+      if (typeof option.value === 'string') {
+        return option.value.startsWith(pattern)
+      }
+      return false
+    }
   },
   type: {
     type: String as PropType<'text' | 'textarea'>,
@@ -147,16 +162,7 @@ export default defineComponent({
     let cachedPartialPatternEnd: number | null = null
     const filteredOptionsRef = computed(() => {
       const { value: pattern } = partialPatternRef
-      return props.options.filter((option) => {
-        if (!pattern) return true
-        if (typeof option.label === 'string') {
-          return option.label.startsWith(pattern)
-        }
-        if (typeof option.value === 'string') {
-          return option.value.startsWith(pattern)
-        }
-        return false
-      })
+      return props.options.filter((option) => props.filter(pattern, option))
     })
     const treeMateRef = computed(() => {
       return createTreeMate<
@@ -164,11 +170,12 @@ export default defineComponent({
       SelectGroupOption,
       SelectIgnoredOption
       // We need to cast filteredOptionsRef's type since the render function
-      // is not compitable
+      // is not compatible
       // MentionOption { value: string, render?: (value: string) => VNodeChild }
       // SelectOption { value: string | number, render?: (value: string | number) => VNodeChild }
       // The 2 types are not compatible since `render`s are not compatible
       // However we know it works...
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       >(filteredOptionsRef.value as any, {
         getKey: (v) => {
           return (v as any).value

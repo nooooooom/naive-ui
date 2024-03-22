@@ -28,7 +28,7 @@ download.vue
 | abstract | `boolean` | `false` | Whether or not DOM wrapping does not exist. Not supported for `image-card` type. |  |
 | accept | `string` | `undefined` | The accept type of upload. See <n-a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#accept" target="_blank">accept</n-a>. |  |
 | action | `string` | `undefined` | The URL to submit data to. |  |
-| create-thumbnail-url | `(file: File) => Promise<string>` | `undefined` | Customize file thumbnails. |  |
+| create-thumbnail-url | `(file: File \| null, fileInfo: UploadSettledFileInfo) => (Promise<string> \| string \| undefined)` | `undefined` | Customize file thumbnails. If `undefined` is returned, the file would use default thumbnail display logic. | `fileInfo` 2.34.0 |
 | custom-request | `(options: UploadCustomRequestOptions) => void` | `undefined` | Customize upload request. For types, see <n-a href="#UploadCustomRequestOptions-Type">UploadCustomRequestOptions</n-a> |  |
 | data | `Object \| ({ file: UploadFileInfo }) => Object` | `undefined` | The additional fileds data of HTTP request's form data. |  |
 | default-file-list | `Array<UploadFileInfo>` | `[]` | The default file list in uncontrolled manner. |  |
@@ -36,6 +36,7 @@ download.vue
 | directory | `boolean` | `false` | Whether to allow directory upload. (In open file dialog only directory can be selected) | 2.28.3 |
 | directory-dnd | `boolean` | `false` | Whether to allow directory drag and drop. (If it's not set, it will follow `directory` prop by default.) | 2.28.3 |
 | disabled | `boolean` | `false` | Whether to disable the upload. |  |
+| file-list-class | `string` | `undefined` | The class of file list area | 2.36.0 |
 | file-list-style | `Object` | `undefined` | The style of file list area |  |
 | file-list | `Array<UploadFileInfo>` | `undefined` | The file list of component. If set, the component will work in controlled manner. |  |
 | headers | `Object \| ({ file: UploadFileInfo }) => Object` | `undefined` | The additional HTTP Headers of request. |  |
@@ -47,7 +48,9 @@ download.vue
 | method | `string` | `'POST'` | The HTTP request method. |  |
 | multiple | `boolean` | `false` | Allow multiple files to be selected. |  |
 | name | `string` | `'file'` | The field name for the file(s) in the HTTP request's form data. |  |
+| render-icon | `(file: UploadSettledFileInfo) => VNodeChild` | `undefined` | Render function of file icon. It only works when `list-type="image"` or `list-type="image-card"`. | 2.34.0 |
 | response-type | `'' \| 'arraybuffer' \| 'blob' \| 'document' \| 'json' \| 'text'` | `''` | Response type of `XMLHttpRequest` used by `n-upload` | 2.33.3 |
+| should-use-thumbnail-url | `(file: UploadSettledFileInfo) => boolean` | A function that only returns `true` for image typed file. | A function that determines whether to show thumbnail for the file. It only works when `list-type="image"` or `list-type="image-card"`. | 2.34.0 |
 | show-cancel-button | `boolean` | `true` | Show a cancel button (while uploading). Use the `on-remove` callback for this event. |  |
 | show-download-button | `boolean` | `false` | Show a download button (after upload is finished). |  |
 | show-file-list | `boolean` | `true` | Show a file list. |  |
@@ -55,15 +58,16 @@ download.vue
 | show-remove-button | `boolean` | `true` | Show a remove button (after upload completed). Use the `on-remove` callback for this event. |  |
 | show-retry-button | `boolean` | `true` | Show a retry button (for a failed upload). |  |
 | show-trigger | `boolean` | `true` | Show upload trigger. | 2.21.5 |
+| trigger-class | `string` | `undefined` | Class of trigger area. | 2.36.0 |
 | trigger-style | `Object \| string` | `undefined` | Style of trigger area. | 2.29.1 |
 | with-credentials | `boolean` | `false` | Any credentials to be sent with the request (e.g. cookie). |  |
 | on-change | `(options: { file: UploadFileInfo, fileList: Array<UploadFileInfo>, event?: Event }) => void` | `() => {}` | Uploaded file(s) status change callback. |  |
 | on-error | `(options: { file: UploadFileInfo, event?: ProgressEvent }) => UploadFileInfo \| void` | `undefined` | Upload failed callback. | 2.24.0 |
 | on-finish | `(options: { file: UploadFileInfo, event?: Event }) => UploadFileInfo \| undefined` | `({ file }) => file` | Upload finished callback. You can intercept and even modify the uploaded `UploadFileInfo`. Note: file will be null in next event-loop |  |
 | on-before-upload | `(options: { file: UploadFileInfo, fileList: Array<UploadFileInfo> }) => (Promise<boolean \| void> \| boolean \| void)` | `true` | Upload ready to start callback. Returning `false`, a promise resolved with `false`, or a rejected promise will cancel the upload. |  |
-| on-download | `(file: FileInfo) => void` | `undefined` | Callback for clicking download buttons. |  |
+| on-download | `(file: FileInfo) => void` | `undefined` | Callback for clicking download buttons. Returning `false`, `Promise resolve false`, `Promise rejected` will cancel the download. |  |
 | on-preview | `(file: FileInfo) => void` | `undefined` | Callback for clicking file links or preview buttons. |  |
-| on-remove | `(options: { file: UploadFileInfo, fileList: Array<UploadFileInfo> }) => Promise<boolean> \| boolean \| any` | `() => true` | File removed callback. Returning `false`, a promise resolved with `false`, or a rejected promise will cancel this removal. |  |
+| on-remove | `(options: { file: UploadFileInfo, fileList: Array<UploadFileInfo>, index: number }) => Promise<boolean> \| boolean \| any` | `() => true` | File removed callback. Returning `false`, a promise resolved with `false`, or a rejected promise will cancel this removal. | `index` NEXT_VERSION |
 | on-update:file-list | `(fileList: UploadFileInfo[]) => void` | `undefined` | Callback function triggered on file-list changes. |  |
 
 #### UploadFileInfo Type

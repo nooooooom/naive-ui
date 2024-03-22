@@ -3,8 +3,8 @@ import {
   inject,
   provide,
   onBeforeUnmount,
-  ComputedRef,
-  Ref
+  type ComputedRef,
+  type Ref
 } from 'vue'
 import type { FormValidationStatus } from '../form/src/interface'
 import { createInjectionKey } from '../_utils'
@@ -25,7 +25,7 @@ export interface FormItemInjection {
 }
 
 export const formItemInjectionKey =
-  createInjectionKey<FormItemInjection>('n-form-item')
+  createInjectionKey<FormItemInjection | null>('n-form-item')
 
 interface UseFormItemOptions<T> {
   defaultSize?: FormItemSize
@@ -63,7 +63,7 @@ export default function useFormItem<T extends AllowedSize = FormItemSize> (
     mergedSize
       ? () => mergedSize(NFormItem)
       : () => {
-          const { size } = props as any
+          const { size } = props
           if (size) return size
           if (NFormItem) {
             const { mergedSize } = NFormItem

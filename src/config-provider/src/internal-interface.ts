@@ -1,5 +1,5 @@
-import { VNodeChild, Ref } from 'vue'
-import { CNode } from 'css-render'
+import type { VNodeChild, Ref } from 'vue'
+import type { CNode } from 'css-render'
 import type { AlertTheme } from '../../alert/styles'
 import type { AnchorTheme } from '../../anchor/styles'
 import type { AutoCompleteTheme } from '../../auto-complete/styles'
@@ -31,6 +31,7 @@ import type { EllipsisTheme } from '../../ellipsis/styles'
 import type { EmptyTheme } from '../../empty/styles'
 import type { EquationTheme } from '../../equation/styles'
 import type { FormTheme } from '../../form/styles'
+import type { FloatButtonTheme } from '../../float-button/styles'
 import type { GradientTextTheme } from '../../gradient-text/styles'
 import type { IconTheme } from '../../icon/styles'
 import type { IconWrapperTheme } from '../../icon-wrapper/styles'
@@ -53,6 +54,7 @@ import type { PopconfirmTheme } from '../../popconfirm/styles'
 import type { PopoverTheme } from '../../popover/styles'
 import type { PopselectTheme } from '../../popselect/styles'
 import type { ProgressTheme } from '../../progress/styles'
+import type { QrCodeTheme } from '../../qr-code/styles'
 import type { RadioTheme } from '../../radio/styles'
 import type { RateTheme } from '../../rate/styles'
 import type { ResultTheme } from '../../result/styles'
@@ -97,6 +99,9 @@ import type { CollapseTransitionTheme } from '../../collapse-transition/styles'
 import type { ButtonGroupTheme } from '../../button-group/styles/light'
 import type { RowTheme } from '../../legacy-grid/styles'
 import type { Katex } from './katex'
+import type { SplitTheme } from '../../split/styles'
+import type { FlexTheme } from '../../flex/styles'
+import type { FloatButtonGroupTheme } from '../../float-button-group/styles'
 
 export interface GlobalThemeWithoutCommon {
   Alert?: AlertTheme
@@ -131,7 +136,10 @@ export interface GlobalThemeWithoutCommon {
   Ellipsis?: EllipsisTheme
   Empty?: EmptyTheme
   Equation?: EquationTheme
+  Flex?: FlexTheme
   Form?: FormTheme
+  FloatButton?: FloatButtonTheme
+  FloatButtonGroup?: FloatButtonGroupTheme
   GradientText?: GradientTextTheme
   Icon?: IconTheme
   IconWrapper?: IconWrapperTheme
@@ -154,6 +162,7 @@ export interface GlobalThemeWithoutCommon {
   Popover?: PopoverTheme
   Popselect?: PopselectTheme
   Progress?: ProgressTheme
+  QrCode?: QrCodeTheme
   Radio?: RadioTheme
   Rate?: RateTheme
   Result?: ResultTheme
@@ -179,6 +188,7 @@ export interface GlobalThemeWithoutCommon {
   Typography?: TypographyTheme
   Upload?: UploadTheme
   Watermark?: WatermarkTheme
+  Split?: SplitTheme
   Row?: RowTheme
   // internal
   InternalSelectMenu?: InternalSelectMenuTheme
@@ -238,11 +248,11 @@ export type RtlEnabledState = Partial<
 Record<keyof GlobalThemeWithoutCommon, RtlItem>
 >
 
-export type Breakpoints = { [k: string]: number } | undefined
+export type Breakpoints = Record<string, number> | undefined
 
 export interface ConfigProviderInjection {
   mergedBreakpointsRef: Ref<Breakpoints | undefined>
-  mergedClsPrefixRef: Ref<string | undefined>
+  mergedClsPrefixRef: Ref<string>
   mergedBorderedRef: Ref<boolean | undefined>
   mergedNamespaceRef: Ref<string | undefined>
   mergedLocaleRef: Ref<NLocale | undefined>

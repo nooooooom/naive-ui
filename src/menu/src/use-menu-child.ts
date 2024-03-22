@@ -1,6 +1,6 @@
-import { Key } from 'treemate'
-import { inject, computed, ComputedRef, Ref } from 'vue'
-import { FollowerPlacement } from 'vueuc'
+import type { Key } from 'treemate'
+import { inject, computed, type ComputedRef, type Ref } from 'vue'
+import type { FollowerPlacement } from 'vueuc'
 import type { MergedTheme } from '../../_mixins/use-theme'
 import type { MenuTheme } from '../styles'
 import type { OnUpdateValueImpl } from './interface'
@@ -90,16 +90,17 @@ export function useMenuChild (props: UseMenuChildProps): UseMenuChild {
       }
       return mergedRootIndent
     }
-    if (NMenuOptionGroup) {
-      return indent / 2 + (NMenuOptionGroup.paddingLeftRef.value as number)
+    if (
+      NMenuOptionGroup &&
+      typeof NMenuOptionGroup.paddingLeftRef.value === 'number'
+    ) {
+      return indent / 2 + NMenuOptionGroup.paddingLeftRef.value
     }
-    if (NSubmenu) {
-      return (
-        (isGroup ? indent / 2 : indent) +
-        (NSubmenu.paddingLeftRef.value as number)
-      )
+    if (NSubmenu && typeof NSubmenu.paddingLeftRef.value === 'number') {
+      return (isGroup ? indent / 2 : indent) + NSubmenu.paddingLeftRef.value
     }
-    return undefined as never
+    // Shouldn't reach here
+    return 0
   })
   const iconMarginRightRef = computed(() => {
     const { collapsedWidth, indent, rootIndent } = menuProps

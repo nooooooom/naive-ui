@@ -2,13 +2,13 @@ import {
   h,
   defineComponent,
   ref,
-  PropType,
-  CSSProperties,
+  type PropType,
+  type CSSProperties,
   computed,
   nextTick,
   toRef,
   watchEffect,
-  VNodeChild
+  type VNodeChild
 } from 'vue'
 import { useMergedState } from 'vooks'
 import commonProps from '../../tag/src/common-props'
@@ -55,9 +55,11 @@ export const dynamicTagsProps = {
     default: () => []
   },
   value: Array as PropType<Array<string | DynamicTagsOption>>,
+  inputClass: String,
   inputStyle: [String, Object] as PropType<string | CSSProperties>,
   inputProps: Object as PropType<InputProps>,
   max: Number as PropType<number>,
+  tagClass: String,
   tagStyle: [String, Object] as PropType<string | CSSProperties>,
   renderTag: Function as PropType<
   | ((tag: string, index: number) => VNodeChild)
@@ -142,7 +144,7 @@ export default defineComponent({
       tags.splice(index, 1)
       doChange(tags)
     }
-    function handleInputKeyUp (e: KeyboardEvent): void {
+    function handleInputKeyDown (e: KeyboardEvent): void {
       switch (e.key) {
         case 'Enter':
           handleInputConfirm()
@@ -191,7 +193,7 @@ export default defineComponent({
       mergedValue: mergedValueRef,
       mergedDisabled: mergedDisabledRef,
       triggerDisabled: triggerDisabledRef,
-      handleInputKeyUp,
+      handleInputKeyDown,
       handleAddClick,
       handleInputBlur,
       handleCloseClick,
@@ -218,6 +220,7 @@ export default defineComponent({
           default: () => {
             const {
               mergedTheme,
+              tagClass,
               tagStyle,
               type,
               round,
@@ -227,11 +230,12 @@ export default defineComponent({
               mergedDisabled,
               showInput,
               inputValue,
+              inputClass,
               inputStyle,
               inputSize,
               inputForceFocused,
               triggerDisabled,
-              handleInputKeyUp,
+              handleInputKeyDown,
               handleInputBlur,
               handleAddClick,
               handleCloseClick,
@@ -247,6 +251,7 @@ export default defineComponent({
                     key={index}
                     theme={mergedTheme.peers.Tag}
                     themeOverrides={mergedTheme.peerOverrides.Tag}
+                    class={tagClass}
                     style={tagStyle}
                     type={type}
                     round={round}
@@ -254,7 +259,9 @@ export default defineComponent({
                     color={color}
                     closable={closable}
                     disabled={mergedDisabled}
-                    onClose={() => handleCloseClick(index)}
+                    onClose={() => {
+                      handleCloseClick(index)
+                    }}
                   >
                     {{
                       default: () => (typeof tag === 'string' ? tag : tag.label)
@@ -274,6 +281,7 @@ export default defineComponent({
                       placeholder=""
                       size={inputSize}
                       style={inputStyle}
+                      class={inputClass}
                       autosize
                       {...this.inputProps}
                       ref="inputInstRef"
@@ -283,7 +291,7 @@ export default defineComponent({
                       }}
                       theme={mergedTheme.peers.Input}
                       themeOverrides={mergedTheme.peerOverrides.Input}
-                      onKeyup={handleInputKeyUp}
+                      onKeydown={handleInputKeyDown}
                       onBlur={handleInputBlur}
                       internalForceFocus={inputForceFocused}
                     />

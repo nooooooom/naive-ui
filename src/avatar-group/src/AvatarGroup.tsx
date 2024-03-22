@@ -1,8 +1,8 @@
 import {
   h,
   defineComponent,
-  PropType,
-  CSSProperties,
+  type PropType,
+  type CSSProperties,
   provide,
   computed
 } from 'vue'
@@ -21,7 +21,7 @@ export interface AvatarGroupInjection {
   size?: Size | undefined
 }
 
-export interface AvatarOption {
+export interface AvatarGroupOption {
   src: string
 }
 
@@ -30,10 +30,11 @@ export const avatarGroupProps = {
   max: Number,
   maxStyle: [Object, String] as PropType<CSSProperties | string>,
   options: {
-    type: Array as PropType<AvatarOption[]>,
+    type: Array as PropType<AvatarGroupOption[]>,
     default: () => []
   },
   vertical: Boolean,
+  expandOnHover: Boolean,
   size: [String, Number] as PropType<Size | undefined>
 } as const
 
@@ -98,7 +99,9 @@ export default defineComponent({
         class={[
           `${mergedClsPrefix}-avatar-group`,
           this.rtlEnabled && `${mergedClsPrefix}-avatar-group--rtl`,
-          this.vertical && `${mergedClsPrefix}-avatar-group--vertical`
+          this.vertical && `${mergedClsPrefix}-avatar-group--vertical`,
+          this.expandOnHover &&
+            `${mergedClsPrefix}-avatar-group--expand-on-hover`
         ]}
         style={this.cssVars}
         role="group"

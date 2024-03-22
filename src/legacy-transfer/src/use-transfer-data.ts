@@ -1,4 +1,4 @@
-import { ref, computed, toRef, Ref } from 'vue'
+import { ref, computed, toRef, type Ref } from 'vue'
 import { useMemo, useMergedState } from 'vooks'
 import type { Option, OptionValue, Filter, CheckedStatus } from './interface'
 
@@ -47,7 +47,7 @@ export function useTransferData (
     if (!props.filterable) return tgtOptsRef.value
     const { filter } = props
     return tgtOptsRef.value.filter((opt) =>
-      filter(tgtPatternRef.value, opt, 'target')
+      filter(tgtPatternRef.value, opt as Option, 'target')
     )
   })
   const avlSrcValueSetRef = computed(

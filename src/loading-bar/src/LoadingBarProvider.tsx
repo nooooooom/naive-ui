@@ -6,14 +6,14 @@ import {
   defineComponent,
   provide,
   nextTick,
-  PropType,
-  ExtractPropTypes,
-  CSSProperties
+  type PropType,
+  type ExtractPropTypes,
+  type CSSProperties
 } from 'vue'
 import { useIsMounted } from 'vooks'
 import { useConfig, useTheme } from '../../_mixins'
 import type { ThemeProps } from '../../_mixins'
-import { ExtractPublicPropTypes } from '../../_utils'
+import type { ExtractPublicPropTypes } from '../../_utils'
 import type { LoadingBarTheme } from '../styles'
 import NLoadingBar from './LoadingBar'
 import {
@@ -36,6 +36,7 @@ export const loadingBarProviderProps = {
     type: [String, Object, Boolean] as PropType<string | HTMLElement | false>,
     default: undefined
   },
+  containerClass: String,
   containerStyle: [String, Object] as PropType<string | CSSProperties>,
   loadingBarStyle: {
     type: Object as PropType<{
@@ -105,6 +106,7 @@ export default defineComponent({
           <NLoadingBar
             ref="loadingBarRef"
             containerStyle={this.containerStyle}
+            containerClass={this.containerClass}
           />
         </Teleport>
         {this.$slots.default?.()}

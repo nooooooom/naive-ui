@@ -6,25 +6,17 @@ import inquirer from 'inquirer'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
 
-const { DINGTALK_TOKEN, DINGTALK_TOKEN_2, DINGTALK_TOKEN_3, DINGTALK_TOKEN_4 } =
-  process.env
+const {
+  DINGTALK_TOKEN,
+  DINGTALK_TOKEN_2,
+  DINGTALK_TOKEN_3,
+  DINGTALK_TOKEN_4,
+  DINGTALK_TOKEN_5
+} = process.env
 
-if (
-  !DINGTALK_TOKEN ||
-  !DINGTALK_TOKEN_2 ||
-  !DINGTALK_TOKEN_3 ||
-  !DINGTALK_TOKEN_4
-) {
-  console.log('No DINGTALK_TOKEN in your env.')
-  process.exit(0)
-}
 
 const { DISCORD_TOKEN } = process.env
 
-if (!DISCORD_TOKEN) {
-  console.error('No DISCORD_TOKEN in your env.')
-  process.exit(0)
-}
 
 async function releaseChangelogToDingTalk() {
   const allLog = fs
@@ -56,7 +48,8 @@ async function releaseChangelogToDingTalk() {
           DINGTALK_TOKEN,
           DINGTALK_TOKEN_2,
           DINGTALK_TOKEN_3,
-          DINGTALK_TOKEN_4
+          DINGTALK_TOKEN_4,
+          DINGTALK_TOKEN_5
         ]) {
           await request
             .post('https://oapi.dingtalk.com/robot/send')

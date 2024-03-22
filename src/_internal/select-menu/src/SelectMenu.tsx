@@ -4,17 +4,17 @@ import {
   onMounted,
   computed,
   defineComponent,
-  PropType,
+  type PropType,
   toRef,
   provide,
   nextTick,
-  WatchStopHandle,
-  CSSProperties,
+  type WatchStopHandle,
+  type CSSProperties,
   watch,
   onBeforeUnmount
 } from 'vue'
-import { TreeNode, createIndexGetter } from 'treemate'
-import { VirtualList, VirtualListInst } from 'vueuc'
+import { type TreeNode, createIndexGetter } from 'treemate'
+import { VirtualList, type VirtualListInst } from 'vueuc'
 import { depx, getPadding, happensIn } from 'seemly'
 import { NEmpty } from '../../../empty'
 import { NScrollbar } from '../../scrollbar'
@@ -28,11 +28,14 @@ import type {
 } from '../../../select/src/interface'
 import { resolveSlot, resolveWrappedSlot, useOnResize } from '../../../_utils'
 import { createKey } from '../../../_utils/cssr'
-import { useThemeClass, useTheme } from '../../../_mixins'
+import { useThemeClass, useTheme, useRtl, useConfig } from '../../../_mixins'
 import type { ThemeProps } from '../../../_mixins'
 import NInternalLoading from '../../loading'
 import NFocusDetector from '../../focus-detector'
-import { internalSelectMenuLight, InternalSelectMenuTheme } from '../styles'
+import {
+  internalSelectMenuLight,
+  type InternalSelectMenuTheme
+} from '../styles'
 import NSelectOption from './SelectOption'
 import NSelectGroupHeader from './SelectGroupHeader'
 import type {
@@ -116,6 +119,12 @@ export default defineComponent({
     onToggle: Function as PropType<(tmNode: TreeNode<SelectOption>) => void>
   },
   setup (props) {
+    const { mergedClsPrefixRef, mergedRtlRef } = useConfig(props)
+    const rtlEnabledRef = useRtl(
+      'InternalSelectMenu',
+      mergedRtlRef,
+      mergedClsPrefixRef
+    )
     const themeRef = useTheme(
       'InternalSelectMenu',
       '-internal-select-menu',
@@ -299,12 +308,12 @@ export default defineComponent({
       }
     }
     function handleFocusin (e: FocusEvent): void {
-      if (selfRef.value?.contains(e.target as any)) {
+      if (selfRef.value?.contains(e.target as Node | null)) {
         props.onFocus?.(e)
       }
     }
     function handleFocusout (e: FocusEvent): void {
-      if (!selfRef.value?.contains(e.relatedTarget as any)) {
+      if (!selfRef.value?.contains(e.relatedTarget as Node | null)) {
         props.onBlur?.(e)
       }
     }
@@ -398,6 +407,8 @@ export default defineComponent({
     useOnResize(selfRef, props.onResize)
     return {
       mergedTheme: themeRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      rtlEnabled: rtlEnabledRef,
       virtualListRef,
       scrollbarRef,
       itemSize: itemSizeRef,
@@ -406,11 +417,11 @@ export default defineComponent({
       empty: emptyRef,
       virtualListContainer () {
         const { value } = virtualListRef
-        return value?.listElRef as HTMLElement
+        return value?.listElRef
       },
       virtualListContent () {
         const { value } = virtualListRef
-        return value?.itemsElRef as HTMLElement
+        return value?.itemsElRef
       },
       doScroll,
       handleFocusin,
@@ -442,6 +453,7 @@ export default defineComponent({
         tabindex={this.focusable ? 0 : -1}
         class={[
           `${clsPrefix}-base-select-menu`,
+          this.rtlEnabled && `${clsPrefix}-base-select-menu--rtl`,
           themeClass,
           this.multiple && `${clsPrefix}-base-select-menu--multiple`
         ]}
@@ -454,6 +466,19 @@ export default defineComponent({
         onMouseenter={this.onMouseenter}
         onMouseleave={this.onMouseleave}
       >
+        {resolveWrappedSlot(
+          $slots.header,
+          (children) =>
+            children && (
+              <div
+                class={`${clsPrefix}-base-select-menu__header`}
+                data-header
+                key="header"
+              >
+                {children}
+              </div>
+            )
+        )}
         {this.loading ? (
           <div class={`${clsPrefix}-base-select-menu__loading`}>
             <NInternalLoading clsPrefix={clsPrefix} strokeWidth={20} />
@@ -540,7 +565,10 @@ export default defineComponent({
             }}
           </NScrollbar>
         ) : (
-          <div class={`${clsPrefix}-base-select-menu__empty`} data-empty>
+          <div
+            class={`${clsPrefix}-base-select-menu__empty`}
+            data-empty
+          >
             {resolveSlot($slots.empty, () => [
               <NEmpty
                 theme={mergedTheme.peers.Empty}

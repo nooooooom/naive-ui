@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   computed,
-  CSSProperties,
+  type CSSProperties,
   defineComponent,
   Fragment,
   h,
   nextTick,
-  PropType,
+  type PropType,
   ref,
   toRef,
-  VNodeChild,
+  type VNodeChild,
   watchEffect
 } from 'vue'
 import { useMergedState } from 'vooks'
 import { NPopselect } from '../../popselect'
 import { NSelect } from '../../select'
+import type { SelectProps } from '../../select'
 import { NInput } from '../../input'
 import { NBaseIcon } from '../../_internal'
 import {
@@ -29,7 +30,7 @@ import { useConfig, useLocale, useTheme, useThemeClass } from '../../_mixins'
 import type { PaginationTheme } from '../styles'
 import { paginationLight } from '../styles'
 import type { PageItem } from './utils'
-import { createPageItemsInfo } from './utils'
+import { createPageItemsInfo, getDefaultPageSize } from './utils'
 import style from './styles/index.cssr'
 import type { ExtractPublicPropTypes, MaybeArray } from '../../_utils'
 import {
@@ -43,9 +44,10 @@ import {
 } from '../../_utils'
 import type { Size as InputSize } from '../../input/src/interface'
 import type { Size as SelectSize } from '../../select/src/interface'
-import {
+import type {
   PaginationRenderLabel,
   PaginationSizeOption,
+  RenderGoto,
   RenderNext,
   RenderPrefix,
   RenderPrev,
@@ -87,8 +89,10 @@ export const paginationProps = {
     type: Number,
     default: 9
   },
+  selectProps: Object as PropType<SelectProps>,
   prev: Function as PropType<RenderPrev>,
   next: Function as PropType<RenderNext>,
+  goto: Function as PropType<RenderGoto>,
   prefix: Function as PropType<RenderPrefix>,
   suffix: Function as PropType<RenderSuffix>,
   label: Function as PropType<PaginationRenderLabel>,
@@ -97,6 +101,7 @@ export const paginationProps = {
     default: ['pages', 'size-picker', 'quick-jumper']
   },
   to: useAdjustedTo.propTo,
+  showQuickJumpDropdown: { type: Boolean, default: true },
   'onUpdate:page': [Function, Array] as PropType<
   MaybeArray<(page: number) => void>
   >,
@@ -162,14 +167,7 @@ export default defineComponent({
     const { localeRef } = useLocale('Pagination')
     const selfRef = ref<HTMLElement | null>(null)
     const uncontrolledPageRef = ref(props.defaultPage)
-    const getDefaultPageSize = (): number => {
-      const { defaultPageSize } = props
-      if (defaultPageSize !== undefined) return defaultPageSize
-      const pageSizeOption = props.pageSizes[0]
-      if (typeof pageSizeOption === 'number') return pageSizeOption
-      return pageSizeOption.value || 10
-    }
-    const uncontrolledPageSizeRef = ref(getDefaultPageSize())
+    const uncontrolledPageSizeRef = ref(getDefaultPageSize(props))
     const mergedPageRef = useMergedState(
       toRef(props, 'page'),
       uncontrolledPageRef
@@ -225,7 +223,8 @@ export default defineComponent({
       createPageItemsInfo(
         mergedPageRef.value,
         mergedPageCountRef.value,
-        props.pageSlot
+        props.pageSlot,
+        props.showQuickJumpDropdown
       )
     )
 
@@ -271,7 +270,7 @@ export default defineComponent({
       const endIndex = mergedPageRef.value * mergedPageSizeRef.value - 1
       const { itemCount } = props
       if (itemCount !== undefined) {
-        return endIndex > itemCount ? itemCount : endIndex
+        return endIndex > itemCount - 1 ? itemCount - 1 : endIndex
       }
       return endIndex
     })
@@ -557,6 +556,7 @@ export default defineComponent({
       prefix,
       suffix,
       label,
+      goto,
       handleJumperInput,
       handleSizePickerChange,
       handleBackwardClick,
@@ -749,7 +749,9 @@ export default defineComponent({
                             type === 'page' &&
                               `${mergedClsPrefix}-pagination-item--clickable`
                           ]}
-                          onClick={() => handlePageItemClick(pageItem)}
+                          onClick={() => {
+                            handlePageItemClick(pageItem)
+                          }}
                           onMouseenter={onMouseenter}
                           onMouseleave={onMouseleave}
                         >
@@ -769,6 +771,9 @@ export default defineComponent({
                               ? 'fast-backward'
                               : 'fast-forward'
                             : pageItem.type
+                        if (pageItem.type !== 'page' && !pageItem.options) {
+                          return itemNode
+                        }
                         return (
                           <NPopselect
                             to={this.to}
@@ -812,7 +817,9 @@ export default defineComponent({
                               }
                             }}
                             options={
-                              pageItem.type !== 'page' ? pageItem.options : []
+                              pageItem.type !== 'page' && pageItem.options
+                                ? pageItem.options
+                                : []
                             }
                             onUpdateValue={this.handleMenuSelect}
                             scrollable
@@ -861,9 +868,11 @@ export default defineComponent({
             case 'size-picker': {
               return !simple && showSizePicker ? (
                 <NSelect
-                  to={this.to}
+                  consistentMenuWidth={false}
                   placeholder=""
                   showCheckmark={false}
+                  to={this.to}
+                  {...this.selectProps}
                   size={selectSize}
                   options={pageSizeOptions}
                   value={mergedPageSize}
@@ -877,7 +886,9 @@ export default defineComponent({
             case 'quick-jumper':
               return !simple && showQuickJumper ? (
                 <div class={`${mergedClsPrefix}-pagination-quick-jumper`}>
-                  {resolveSlot(this.$slots.goto, () => [locale.goto])}
+                  {goto
+                    ? goto()
+                    : resolveSlot(this.$slots.goto, () => [locale.goto])}
                   <NInput
                     value={jumperValue}
                     onUpdateValue={handleJumperInput}

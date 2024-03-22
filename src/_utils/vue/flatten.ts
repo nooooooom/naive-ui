@@ -1,4 +1,10 @@
-import { Fragment, VNodeChild, createTextVNode, VNode, Comment } from 'vue'
+import {
+  Fragment,
+  type VNodeChild,
+  createTextVNode,
+  type VNode,
+  Comment
+} from 'vue'
 
 // o(n) flatten
 export function flatten (
@@ -24,7 +30,8 @@ export function flatten (
         flatten(vNode.children, filterCommentNode, result)
       }
       // rawSlot
-    } else if (vNode.type !== Comment) {
+    } else {
+      if (vNode.type === Comment && filterCommentNode) return
       result.push(vNode)
     }
   })

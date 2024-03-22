@@ -34,6 +34,7 @@ status.vue
 | default-value | `string \| number \| Array<number \| string> \| null` | `null` | Data selected by default if no value is set. |  |
 | disabled | `boolean` | `false` | Whether to disable the cascader. |  |
 | disabled-field | `string` | `'disabled'` | The disabled field in `CascaderOption`. | 2.32.2 |
+| ellipsis-tag-popover-props | `PopoverProps` | `undefined` | `popover` props of the preview ellipsis tag. | 2.37.0 |
 | expand-trigger | `'click' \| 'hover'` | `'click'` | If `remote` is set, `'hover'` won't work. |  |
 | filterable | `boolean` | `false` | Note: If `remote` is set, this won't have any effect. |  |
 | filter | `(pattern: string, option: CascaderOption, path: CascaderOption[]) => boolean` | A string based filter algorithm. | Filter function of the cascader. |  |
@@ -78,7 +79,7 @@ status.vue
 | action | `()` | Action content displayed in the cascading menu. |  |
 | arrow | `()` | Arrow content displayed in the cascading menu. | 2.32.2 |
 | empty | `()` | Empty state slot for the options cascading menu. | 2.22.0 |
-| not-found | `()` | Data not found slot when searching. | NEXT_VERSION |
+| not-found | `()` | Data not found slot when searching. | 2.34.0 |
 
 ### Cascader Methods
 
@@ -86,5 +87,5 @@ status.vue
 | --- | --- | --- | --- |
 | blur | `() => void` | Blur. | 2.24.2 |
 | focus | `() => void` | Focus. | 2.24.2 |
-| getCheckedKeys | `() => Array<string \| number>` | Get checked keys. | NEXT_VERSION |
-| getIndeterminateKeys | `() => Array<string \| number>` | Get indeterminate keys. | NEXT_VERSION |
+| getCheckedData | `() => { keys: Array<string \| number>, options: Array<TreeOption \| null> }` | Get checked data. | 2.34.0 |
+| getIndeterminateData | `() => { keys: Array<string \| number>, options: Array<TreeOption \| null> }` | Get indeterminate data. | 2.34.0 |

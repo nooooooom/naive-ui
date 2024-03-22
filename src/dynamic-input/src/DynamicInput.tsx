@@ -6,9 +6,9 @@ import {
   toRaw,
   computed,
   defineComponent,
-  PropType,
+  type PropType,
   inject,
-  CSSProperties,
+  type CSSProperties,
   provide,
   watchEffect
 } from 'vue'
@@ -58,6 +58,7 @@ export const dynamicInputProps = {
     default: 'input'
   },
   keyField: String,
+  itemClass: String,
   itemStyle: [String, Object] as PropType<string | CSSProperties>,
   // for preset pair
   keyPlaceholder: {
@@ -73,6 +74,7 @@ export const dynamicInputProps = {
     type: String,
     default: ''
   },
+  disabled: Boolean,
   showSortButton: Boolean,
   createButtonProps: Object as PropType<ButtonProps>,
   onCreate: Function as PropType<(index: number) => any>,
@@ -154,9 +156,9 @@ export default defineComponent({
       if (value === undefined || value === null) return index
       if (typeof value !== 'object') return index
       const rawValue = isProxy(value) ? toRaw(value) : value
-      let key = globalDataKeyMap.get(rawValue)
+      let key = globalDataKeyMap.get(rawValue as WeakKey)
       if (key === undefined) {
-        globalDataKeyMap.set(rawValue, (key = createId()))
+        globalDataKeyMap.set(rawValue as WeakKey, (key = createId()))
       }
       return key
     }
@@ -177,15 +179,15 @@ export default defineComponent({
           : originalItem
         const rawNew = isProxy(value) ? toRaw(value) : value
         // inherit key is value position is not change
-        const originalKey = globalDataKeyMap.get(rawOriginal)
+        const originalKey = globalDataKeyMap.get(rawOriginal as WeakKey)
         if (originalKey !== undefined) {
-          globalDataKeyMap.set(rawNew, originalKey)
+          globalDataKeyMap.set(rawNew as WeakKey, originalKey)
         }
       }
       doUpdateValue(newValue)
     }
     function handleCreateClick (): void {
-      createItem(0)
+      createItem(-1)
     }
     function createItem (index: number): void {
       const { value: mergedValue } = mergedValueRef
@@ -215,11 +217,13 @@ export default defineComponent({
       if (!Array.isArray(mergedValue)) return
       const { min } = props
       if (mergedValue.length <= min) return
+      const { onRemove } = props
+      if (onRemove) {
+        onRemove(index)
+      }
       const newValue = Array.from(mergedValue)
       newValue.splice(index, 1)
       doUpdateValue(newValue)
-      const { onRemove } = props
-      if (onRemove) onRemove(index)
     }
     function swap (
       array: any[],
@@ -300,6 +304,7 @@ export default defineComponent({
   render () {
     const {
       $slots,
+      itemClass,
       buttonSize,
       mergedClsPrefix,
       mergedValue,
@@ -315,7 +320,8 @@ export default defineComponent({
       remove,
       createItem,
       move,
-      onRender
+      onRender,
+      disabled
     } = this
     onRender?.()
     return (
@@ -334,7 +340,7 @@ export default defineComponent({
             dashed
             size={buttonSize}
             {...this.createButtonProps}
-            disabled={this.insertionDisabled}
+            disabled={this.insertionDisabled || disabled}
             theme={mergedTheme.peers.Button}
             themeOverrides={mergedTheme.peerOverrides.Button}
             onClick={this.handleCreateClick}
@@ -357,7 +363,7 @@ export default defineComponent({
             <div
               key={keyField ? _[keyField] : ensureKey(_, index)}
               data-key={keyField ? _[keyField] : ensureKey(_, index)}
-              class={`${mergedClsPrefix}-dynamic-input-item`}
+              class={[`${mergedClsPrefix}-dynamic-input-item`, itemClass]}
               style={itemStyle}
             >
               {resolveSlotWithProps(
@@ -370,6 +376,7 @@ export default defineComponent({
                   return [
                     preset === 'input' ? (
                       <NDynamicInputInputPreset
+                        disabled={disabled}
                         clsPrefix={mergedClsPrefix}
                         value={mergedValue[index]}
                         parentPath={
@@ -380,10 +387,13 @@ export default defineComponent({
                             ? `${NFormItem.path.value}[${index}]`
                             : undefined
                         }
-                        onUpdateValue={(v) => handleValueChange(index, v)}
+                        onUpdateValue={(v) => {
+                          handleValueChange(index, v)
+                        }}
                       />
                     ) : preset === 'pair' ? (
                       <NDynamicInputPairPreset
+                        disabled={disabled}
                         clsPrefix={mergedClsPrefix}
                         value={mergedValue[index]}
                         parentPath={
@@ -394,86 +404,110 @@ export default defineComponent({
                             ? `${NFormItem.path.value}[${index}]`
                             : undefined
                         }
-                        onUpdateValue={(v) => handleValueChange(index, v)}
+                        onUpdateValue={(v) => {
+                          handleValueChange(index, v)
+                        }}
                       />
                     ) : null
                   ]
                 }
               )}
-              <div class={`${mergedClsPrefix}-dynamic-input-item__action`}>
-                <NButtonGroup size={buttonSize}>
-                  {{
-                    default: () => [
-                      <NButton
-                        disabled={this.removeDisabled}
-                        theme={mergedTheme.peers.Button}
-                        themeOverrides={mergedTheme.peerOverrides.Button}
-                        circle
-                        onClick={() => remove(index)}
-                      >
-                        {{
-                          icon: () => (
-                            <NBaseIcon clsPrefix={mergedClsPrefix}>
-                              {{ default: () => <RemoveIcon /> }}
-                            </NBaseIcon>
-                          )
-                        }}
-                      </NButton>,
-                      <NButton
-                        disabled={this.insertionDisabled}
-                        circle
-                        theme={mergedTheme.peers.Button}
-                        themeOverrides={mergedTheme.peerOverrides.Button}
-                        onClick={() => createItem(index)}
-                      >
-                        {{
-                          icon: () => (
-                            <NBaseIcon clsPrefix={mergedClsPrefix}>
-                              {{ default: () => <AddIcon /> }}
-                            </NBaseIcon>
-                          )
-                        }}
-                      </NButton>,
-                      showSortButton ? (
-                        <NButton
-                          disabled={index === 0}
-                          circle
-                          theme={mergedTheme.peers.Button}
-                          themeOverrides={mergedTheme.peerOverrides.Button}
-                          onClick={() => move('up', index)}
-                        >
-                          {{
-                            icon: () => (
-                              <NBaseIcon clsPrefix={mergedClsPrefix}>
-                                {{
-                                  default: () => <ArrowUpIcon />
-                                }}
-                              </NBaseIcon>
-                            )
-                          }}
-                        </NButton>
-                      ) : null,
-                      showSortButton ? (
-                        <NButton
-                          disabled={index === mergedValue.length - 1}
-                          circle
-                          theme={mergedTheme.peers.Button}
-                          themeOverrides={mergedTheme.peerOverrides.Button}
-                          onClick={() => move('down', index)}
-                        >
-                          {{
-                            icon: () => (
-                              <NBaseIcon clsPrefix={mergedClsPrefix}>
-                                {{ default: () => <ArrowDownIcon /> }}
-                              </NBaseIcon>
-                            )
-                          }}
-                        </NButton>
-                      ) : null
-                    ]
-                  }}
-                </NButtonGroup>
-              </div>
+              {resolveSlotWithProps(
+                $slots.action,
+                {
+                  value: mergedValue[index],
+                  index,
+                  create: createItem,
+                  remove,
+                  move
+                },
+                () => [
+                  <div class={`${mergedClsPrefix}-dynamic-input-item__action`}>
+                    <NButtonGroup size={buttonSize}>
+                      {{
+                        default: () => [
+                          <NButton
+                            disabled={this.removeDisabled || disabled}
+                            theme={mergedTheme.peers.Button}
+                            themeOverrides={mergedTheme.peerOverrides.Button}
+                            circle
+                            onClick={() => {
+                              remove(index)
+                            }}
+                          >
+                            {{
+                              icon: () => (
+                                <NBaseIcon clsPrefix={mergedClsPrefix}>
+                                  {{ default: () => <RemoveIcon /> }}
+                                </NBaseIcon>
+                              )
+                            }}
+                          </NButton>,
+                          <NButton
+                            disabled={this.insertionDisabled || disabled}
+                            circle
+                            theme={mergedTheme.peers.Button}
+                            themeOverrides={mergedTheme.peerOverrides.Button}
+                            onClick={() => {
+                              createItem(index)
+                            }}
+                          >
+                            {{
+                              icon: () => (
+                                <NBaseIcon clsPrefix={mergedClsPrefix}>
+                                  {{ default: () => <AddIcon /> }}
+                                </NBaseIcon>
+                              )
+                            }}
+                          </NButton>,
+                          showSortButton ? (
+                            <NButton
+                              disabled={index === 0 || disabled}
+                              circle
+                              theme={mergedTheme.peers.Button}
+                              themeOverrides={mergedTheme.peerOverrides.Button}
+                              onClick={() => {
+                                move('up', index)
+                              }}
+                            >
+                              {{
+                                icon: () => (
+                                  <NBaseIcon clsPrefix={mergedClsPrefix}>
+                                    {{
+                                      default: () => <ArrowUpIcon />
+                                    }}
+                                  </NBaseIcon>
+                                )
+                              }}
+                            </NButton>
+                          ) : null,
+                          showSortButton ? (
+                            <NButton
+                              disabled={
+                                index === mergedValue.length - 1 || disabled
+                              }
+                              circle
+                              theme={mergedTheme.peers.Button}
+                              themeOverrides={mergedTheme.peerOverrides.Button}
+                              onClick={() => {
+                                move('down', index)
+                              }}
+                            >
+                              {{
+                                icon: () => (
+                                  <NBaseIcon clsPrefix={mergedClsPrefix}>
+                                    {{ default: () => <ArrowDownIcon /> }}
+                                  </NBaseIcon>
+                                )
+                              }}
+                            </NButton>
+                          ) : null
+                        ]
+                      }}
+                    </NButtonGroup>
+                  </div>
+                ]
+              )}
             </div>
           ))
         )}

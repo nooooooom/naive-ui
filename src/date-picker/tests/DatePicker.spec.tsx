@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style */
 import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { format } from 'date-fns/esm'
 import { NDatePicker } from '../index'
-import { Value } from '../src/interface'
+import type { Value } from '../src/interface'
 import { dateEnUS } from '../../locales'
 
 describe('n-date-picker', () => {
@@ -151,6 +152,7 @@ describe('n-date-picker', () => {
       inputReadonly: true
     })
     expect(wrapper.find('input').attributes('readonly')).toBe('')
+    wrapper.unmount()
   })
 
   it('should work with `clearable` prop', async () => {
@@ -204,12 +206,13 @@ describe('n-date-picker', () => {
       }
     })
 
-    const inputEl = await wrapper.find('.n-input__input').find('input')
+    const inputEl = wrapper.find('.n-input__input').find('input')
     expect(inputEl.element.value).toEqual(
       format(1183135260000, 'yyyy-MM-dd', {
         locale: dateEnUS.locale
       })
     )
+    wrapper.unmount()
   })
 
   it('should work with `firstDayOfWeek` prop', async () => {
@@ -290,6 +293,7 @@ describe('n-date-picker', () => {
     expect(wrapper.text().includes('07akioni')).toBe(true)
     await wrapper.setProps({ separator: '08akioni', type: 'datetimerange' })
     expect(wrapper.text().includes('08akioni')).toBe(true)
+    wrapper.unmount()
   })
 
   it('should work with `status` prop', async () => {
@@ -302,5 +306,56 @@ describe('n-date-picker', () => {
       )
       wrapper.unmount()
     })
+  })
+
+  it('should work with `monthStringType` prop', async () => {
+    const wrapper = mount(NDatePicker, {
+      attachTo: document.body,
+      props: {
+        type: 'month',
+        monthFormat: 'M'
+      }
+    })
+
+    await wrapper.find('.n-input__input').trigger('click')
+    expect(
+      document.querySelectorAll(
+        '.n-date-panel-month-calendar__picker-col-item'
+      )[0].textContent
+    ).toBe('1')
+
+    await wrapper.setProps({ monthFormat: 'MM' })
+    await wrapper.find('.n-input__input').trigger('click')
+    expect(
+      document.querySelectorAll(
+        '.n-date-panel-month-calendar__picker-col-item'
+      )[0].textContent
+    ).toBe('01')
+
+    await wrapper.setProps({ monthFormat: 'MMMM' })
+    await wrapper.find('.n-input__input').trigger('click')
+    expect(
+      document.querySelectorAll(
+        '.n-date-panel-month-calendar__picker-col-item'
+      )[0].textContent
+    ).toBe('January')
+
+    await wrapper.setProps({ monthFormat: 'MMM' })
+    await wrapper.find('.n-input__input').trigger('click')
+    expect(
+      document.querySelectorAll(
+        '.n-date-panel-month-calendar__picker-col-item'
+      )[0].textContent
+    ).toBe('Jan')
+
+    await wrapper.setProps({ monthFormat: 'MMMMM' })
+    await wrapper.find('.n-input__input').trigger('click')
+    expect(
+      document.querySelectorAll(
+        '.n-date-panel-month-calendar__picker-col-item'
+      )[0].textContent
+    ).toBe('J')
+
+    wrapper.unmount()
   })
 })

@@ -138,10 +138,17 @@ export default defineComponent({
                     [`${mergedClsPrefix}-date-panel-date--excluded`]:
                       !dateItem.inCurrentMonth,
                     [`${mergedClsPrefix}-date-panel-date--disabled`]:
-                      this.mergedIsDateDisabled(dateItem.ts)
+                      this.mergedIsDateDisabled(dateItem.ts, {
+                        type: 'date',
+                        year: dateItem.dateObject.year,
+                        month: dateItem.dateObject.month,
+                        date: dateItem.dateObject.date
+                      })
                   }
                 ]}
-                onClick={() => this.handleDateClick(dateItem)}
+                onClick={() => {
+                  this.handleDateClick(dateItem)
+                }}
               >
                 <div class={`${mergedClsPrefix}-date-panel-date__trigger`} />
                 {dateItem.dateObject.date}

@@ -1,4 +1,4 @@
-import { Ref, VNodeChild } from 'vue'
+import type { Ref, VNodeChild } from 'vue'
 import type { MergedTheme } from '../../_mixins'
 import { createInjectionKey } from '../../_utils'
 import type { TransferTheme } from '../styles'
@@ -44,6 +44,7 @@ export interface TransferInjection {
   handleItemCheck: (checked: boolean, value: OptionValue) => void
   renderSourceLabelRef: Ref<TransferRenderSourceLabel | undefined>
   renderTargetLabelRef: Ref<TransferRenderTargetLabel | undefined>
+  showSelectedRef: Ref<boolean>
 }
 
 export const transferInjectionKey =

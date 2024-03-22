@@ -3,17 +3,14 @@ import {
   ref,
   defineComponent,
   computed,
-  PropType,
   onMounted,
   onBeforeUnmount,
   mergeProps,
   Transition,
-  CSSProperties,
   watchEffect,
-  VNode,
-  HTMLAttributes,
   Fragment
 } from 'vue'
+import type { PropType, CSSProperties, VNode, HTMLAttributes } from 'vue'
 import { on, off } from 'evtd'
 import { VResizeObserver } from 'vueuc'
 import { useIsIos } from 'vooks'
@@ -102,7 +99,7 @@ const scrollbarProps = {
   content: Function as PropType<() => HTMLElement | null | undefined>,
   containerClass: String,
   containerStyle: [String, Object] as PropType<string | CSSProperties>,
-  contentClass: String,
+  contentClass: [String, Array] as PropType<string | Array<string | undefined>>,
   contentStyle: [String, Object] as PropType<string | CSSProperties>,
   horizontalRailStyle: [String, Object] as PropType<string | CSSProperties>,
   verticalRailStyle: [String, Object] as PropType<string | CSSProperties>,
@@ -314,7 +311,7 @@ const Scrollbar = defineComponent({
     ): void => {
       if (!props.scrollable) return
       if (typeof options === 'number') {
-        scrollToPosition(y ?? 0, options, 0, false, 'auto')
+        scrollToPosition(options, y ?? 0, 0, false, 'auto')
         return
       }
       const {
@@ -716,19 +713,24 @@ const Scrollbar = defineComponent({
     } = this
     if (!this.scrollable) return $slots.default?.()
     const triggerIsNone = this.trigger === 'none'
-    const createYRail = (): VNode => {
+    const createYRail = (
+      className: string | undefined,
+      style: CSSProperties | undefined
+    ): VNode => {
       return (
         <div
           ref="yRailRef"
           class={[
             `${mergedClsPrefix}-scrollbar-rail`,
-            `${mergedClsPrefix}-scrollbar-rail--vertical`
+            `${mergedClsPrefix}-scrollbar-rail--vertical`,
+            className
           ]}
           data-scrollbar-rail
-          style={this.verticalRailStyle}
+          style={[style || '', this.verticalRailStyle as CSSProperties]}
           aria-hidden
         >
           {h(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             (triggerIsNone ? Wrapper : Transition) as any,
             triggerIsNone ? null : { name: 'fade-in-transition' },
             {
@@ -809,7 +811,7 @@ const Scrollbar = defineComponent({
               </VResizeObserver>
             </div>
           ),
-          internalHoistYRail ? null : createYRail(),
+          internalHoistYRail ? null : createYRail(undefined, undefined),
           this.xScrollable && (
             <div
               ref="xRailRef"
@@ -822,6 +824,7 @@ const Scrollbar = defineComponent({
               aria-hidden
             >
               {h(
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 (triggerIsNone ? Wrapper : Transition) as any,
                 triggerIsNone ? null : { name: 'fade-in-transition' },
                 {
@@ -857,7 +860,7 @@ const Scrollbar = defineComponent({
       return (
         <Fragment>
           {scrollbarNode}
-          {createYRail()}
+          {createYRail(this.themeClass, this.cssVars)}
         </Fragment>
       )
     } else {

@@ -3,24 +3,28 @@ import {
   defineComponent,
   computed,
   provide,
-  PropType,
+  type PropType,
   ref,
   watch,
   toRef,
-  CSSProperties,
+  type CSSProperties,
   isReactive,
   watchEffect,
-  VNodeChild,
-  HTMLAttributes,
+  type VNodeChild,
+  type HTMLAttributes,
   nextTick
 } from 'vue'
-import { createTreeMate, SubtreeNotLoadedError, CheckStrategy } from 'treemate'
+import {
+  createTreeMate,
+  SubtreeNotLoadedError,
+  type CheckStrategy
+} from 'treemate'
 import {
   VBinder,
   VTarget,
   VFollower,
-  FollowerPlacement,
-  FollowerInst
+  type FollowerPlacement,
+  type FollowerInst
 } from 'vueuc'
 import { depx, changeColor, happensIn, getPreciseEventTarget } from 'seemly'
 import { useIsMounted, useMergedState } from 'vooks'
@@ -63,6 +67,7 @@ import type {
 } from './interface'
 import { cascaderInjectionKey } from './interface'
 import style from './styles/index.cssr'
+import { type PopoverProps } from '../../popover'
 
 export const cascaderProps = {
   ...(useTheme.props as ThemeProps<CascaderTheme>),
@@ -127,6 +132,7 @@ export const cascaderProps = {
     default: undefined
   },
   maxTagCount: [String, Number] as PropType<number | 'responsive'>,
+  ellipsisTagPopoverProps: Object as PropType<PopoverProps>,
   menuProps: Object as PropType<HTMLAttributes>,
   filterMenuProps: Object as PropType<HTMLAttributes>,
   virtualScroll: {
@@ -156,10 +162,10 @@ export const cascaderProps = {
   'onUpdate:value': [Function, Array] as PropType<MaybeArray<OnUpdateValue>>,
   onUpdateValue: [Function, Array] as PropType<MaybeArray<OnUpdateValue>>,
   'onUpdate:show': [Function, Array] as PropType<
-  MaybeArray<(show: Boolean) => void>
+  MaybeArray<(show: boolean) => void>
   >,
   onUpdateShow: [Function, Array] as PropType<
-  MaybeArray<(show: Boolean) => void>
+  MaybeArray<(show: boolean) => void>
   >,
   onBlur: Function as PropType<(e: FocusEvent) => void>,
   onFocus: Function as PropType<(e: FocusEvent) => void>,
@@ -338,6 +344,12 @@ export default defineComponent({
     function updateHoverKey (key: Key | null): void {
       hoverKeyRef.value = key
     }
+    function getOptionsByKeys (keys: Key[]): Array<CascaderOption | null> {
+      const {
+        value: { getNode }
+      } = treeMateRef
+      return keys.map((keys) => getNode(keys)?.rawNode || null)
+    }
     function doCheck (key: Key): boolean {
       const { cascade, multiple, filterable } = props
       const {
@@ -352,9 +364,7 @@ export default defineComponent({
           })
           doUpdateValue(
             checkedKeys,
-            checkedKeys.map(
-              (checkedKey) => getNode(checkedKey)?.rawNode || null
-            ),
+            getOptionsByKeys(checkedKeys),
             checkedKeys.map((checkedKey) =>
               getRawNodePath(getPath(checkedKey)?.treeNodePath)
             )
@@ -368,7 +378,7 @@ export default defineComponent({
               const tmNode = getNode(key)
               if (tmNode !== null) {
                 cascaderMenuInstRef.value.showErrorMessage(
-                  (tmNode.rawNode as any)[props.labelField]
+                  (tmNode.rawNode as any)[props.labelField] as string
                 )
               }
             }
@@ -883,9 +893,32 @@ export default defineComponent({
       blur: () => {
         triggerInstRef.value?.blur()
       },
-      getCheckedKeys: () => (showCheckboxRef.value ? checkedKeysRef.value : []),
-      getIndeterminateKeys: () =>
-        showCheckboxRef.value ? indeterminateKeysRef.value : []
+      getCheckedData: () => {
+        if (showCheckboxRef.value) {
+          const checkedKeys = checkedKeysRef.value
+          return {
+            keys: checkedKeys,
+            options: getOptionsByKeys(checkedKeys)
+          }
+        }
+        return {
+          keys: [],
+          options: []
+        }
+      },
+      getIndeterminateData: () => {
+        if (showCheckboxRef.value) {
+          const indeterminateKeys = indeterminateKeysRef.value
+          return {
+            keys: indeterminateKeys,
+            options: getOptionsByKeys(indeterminateKeys)
+          }
+        }
+        return {
+          keys: [],
+          options: []
+        }
+      }
     }
     const cssVarsRef = computed(() => {
       const {
@@ -991,6 +1024,7 @@ export default defineComponent({
                       status={this.mergedStatus}
                       clsPrefix={mergedClsPrefix}
                       maxTagCount={this.maxTagCount}
+                      ellipsisTagPopoverProps={this.ellipsisTagPopoverProps}
                       bordered={this.mergedBordered}
                       size={this.mergedSize}
                       theme={this.mergedTheme.peers.InternalSelection}

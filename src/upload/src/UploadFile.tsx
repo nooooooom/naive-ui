@@ -1,15 +1,15 @@
 import {
   h,
   defineComponent,
-  PropType,
+  type PropType,
   computed,
   inject,
   ref,
   watchEffect,
-  VNode
+  type VNode
 } from 'vue'
 import { useMemo } from 'vooks'
-import { ImageInst } from '../../image/src/Image'
+import { type ImageInst } from '../../image/src/Image'
 import {
   CancelIcon,
   TrashIcon,
@@ -19,16 +19,16 @@ import {
   EyeIcon
 } from '../../_internal/icons'
 import type { ExtractThemeOverrides } from '../../_mixins/use-theme'
-import { ButtonTheme } from '../../button/styles'
+import { type ButtonTheme } from '../../button/styles'
 import { NImage } from '../../image'
 import { NButton } from '../../button'
 import { NIconSwitchTransition, NBaseIcon } from '../../_internal'
-import { warn } from '../../_utils'
+import { warn, download } from '../../_utils'
 import NUploadProgress from './UploadProgress'
 import { uploadInjectionKey } from './interface'
 import type { SettledFileInfo, ListType } from './interface'
 import { imageIcon, documentIcon } from './icons'
-import { download, isImageFile } from './utils'
+import { isImageFile } from './utils'
 
 const buttonThemeOverrides: ExtractThemeOverrides<ButtonTheme> = {
   paddingMedium: '0 3px',
@@ -49,6 +49,10 @@ export default defineComponent({
     },
     listType: {
       type: String as PropType<ListType>,
+      required: true
+    },
+    index: {
+      type: Number,
       required: true
     }
   },
@@ -138,7 +142,8 @@ export default defineComponent({
         onRemove
           ? onRemove({
             file: Object.assign({}, file),
-            fileList: mergedFileList
+            fileList: mergedFileList,
+            index: props.index
           })
           : true
       ).then((result) => {
@@ -190,7 +195,9 @@ export default defineComponent({
         return
       }
       if (NUpload.shouldUseThumbnailUrlRef.value(props.file)) {
-        thumbnailUrlRef.value = await NUpload.getFileThumbnailUrl(props.file)
+        thumbnailUrlRef.value = await NUpload.getFileThumbnailUrlResolver(
+          props.file
+        )
       }
     }
 

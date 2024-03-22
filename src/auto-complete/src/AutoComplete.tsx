@@ -5,19 +5,19 @@ import {
   computed,
   defineComponent,
   Transition,
-  PropType,
+  type PropType,
   withDirectives,
-  CSSProperties,
-  InputHTMLAttributes,
+  type CSSProperties,
+  type InputHTMLAttributes,
   watchEffect,
-  HTMLAttributes
+  type HTMLAttributes
 } from 'vue'
-import { createTreeMate, TreeNode } from 'treemate'
-import { VBinder, VTarget, VFollower, FollowerPlacement } from 'vueuc'
+import { createTreeMate, type TreeNode } from 'treemate'
+import { VBinder, VTarget, VFollower, type FollowerPlacement } from 'vueuc'
 import { clickoutside } from 'vdirs'
 import { useIsMounted, useMergedState } from 'vooks'
 import { getPreciseEventTarget } from 'seemly'
-import {
+import type {
   RenderOption,
   RenderLabel
 } from '../../_internal/select-menu/src/interface'
@@ -33,12 +33,15 @@ import type { ThemeProps } from '../../_mixins'
 import {
   call,
   useAdjustedTo,
-  MaybeArray,
+  type MaybeArray,
   getFirstSlotVNode,
-  warnOnce
+  warnOnce,
+  type ExtractPublicPropTypes
 } from '../../_utils'
-import type { ExtractPublicPropTypes } from '../../_utils'
-import { NInternalSelectMenu, InternalSelectMenuRef } from '../../_internal'
+import {
+  NInternalSelectMenu,
+  type InternalSelectMenuRef
+} from '../../_internal'
 import type { InputInst } from '../../input'
 import { NInput } from '../../input'
 import { autoCompleteLight } from '../styles'
@@ -48,6 +51,7 @@ import type {
   AutoCompleteOptions,
   OnUpdateValue,
   OnSelect,
+  OnSelectImpl,
   OnUpdateImpl,
   AutoCompleteOption,
   AutoCompleteInst
@@ -58,6 +62,7 @@ export const autoCompleteProps = {
   ...(useTheme.props as ThemeProps<AutoCompleteTheme>),
   to: useAdjustedTo.propTo,
   menuProps: Object as PropType<HTMLAttributes>,
+  append: Boolean,
   bordered: {
     type: Boolean as PropType<boolean | undefined>,
     default: undefined
@@ -87,6 +92,7 @@ export const autoCompleteProps = {
   blurAfterSelect: Boolean,
   clearAfterSelect: Boolean,
   getShow: Function as PropType<(inputValue: string) => boolean>,
+  showEmpty: Boolean,
   inputProps: Object as PropType<InputHTMLAttributes>,
   renderOption: Function as PropType<RenderOption>,
   renderLabel: Function as PropType<RenderLabel>,
@@ -164,7 +170,7 @@ export default defineComponent({
       return (
         mergedShowOptionsRef.value &&
         canBeActivatedRef.value &&
-        !!selectOptionsRef.value.length
+        (props.showEmpty ? true : !!selectOptionsRef.value.length)
       )
     })
     const treeMateRef = computed(() =>
@@ -186,7 +192,7 @@ export default defineComponent({
     function doSelect (value: string | number): void {
       const { onSelect } = props
       const { nTriggerFormInput, nTriggerFormChange } = formItem
-      if (onSelect) call(onSelect, value)
+      if (onSelect) call(onSelect as OnSelectImpl, value)
       nTriggerFormInput()
       nTriggerFormChange()
     }
@@ -235,7 +241,11 @@ export default defineComponent({
         if (props.clearAfterSelect) {
           doUpdateValue(null)
         } else if (option.label !== undefined) {
-          doUpdateValue(option.label)
+          doUpdateValue(
+            props.append
+              ? `${mergedValueRef.value}${option.label}`
+              : option.label
+          )
         }
         canBeActivatedRef.value = false
         if (props.blurAfterSelect) {
@@ -428,7 +438,9 @@ export default defineComponent({
                               renderOption={this.renderOption}
                               size="medium"
                               onToggle={this.handleToggle}
-                            />,
+                            >
+                              {{ empty: () => this.$slots.empty?.() }}
+                            </NInternalSelectMenu>,
                             [
                               [
                                 clickoutside,

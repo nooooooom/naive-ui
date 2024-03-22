@@ -19,14 +19,17 @@
 - DingTalk Group 1 (Member limit reached) 33482509
 - DingTalk Group 2 (Member limit reached) 35886835
 - DingTalk Group 3 (Member limit reached) 32377370
-- DingTalk Group 4 8165002788
+- DingTalk Group 4 (Member limit reached) 8165002788
+- DingTalk Group 5 31205022250
+- DingTalk Group 6 62720001971
+
 - [Awesome Naive UI](https://github.com/naive-ui/awesome-naive)
 
 ## Features
 
 ### Fairly Complete
 
-There are more than 80 components. Hope they can help you write less code.
+There are more than 90 components. Hope they can help you write less code.
 
 What's more, they are all treeshakable.
 
@@ -70,7 +73,7 @@ Naive UI recommends using [xicons](https://www.xicons.org) as icon library.
 
 ### Design Resources
 
-[Naive UI (Sketch)](https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library%28Square-Corner%29.sketch).
+[Naive UI (Sketch)](https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library-en-US.sketch).
 
 ## Contributing
 
@@ -80,4 +83,4 @@ Please see [CONTRIBUTING.md](https://github.com/tusen-ai/naive-ui/blob/main/CONT
 
 Naive UI is licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-Graphics resouces of `result` component is licensed under the [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). The graphics resources come from [Twemoji](https://github.com/twitter/twemoji).
+Graphics resources of `result` component is licensed under the [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). The graphics resources come from [Twemoji](https://github.com/twitter/twemoji).

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { NTree, TreeOption } from '../index'
+import { NTree, type TreeOption } from '../index'
 
 describe('n-tree', () => {
   it('should work with import on demand', () => {
@@ -420,7 +420,7 @@ describe('n-tree', () => {
     })
     setTimeout(() => {
       expect(onLoad).toHaveBeenCalled()
-      wrapper.setProps({ 'expanded-keys': [1, 2] }).then(() => {
+      wrapper.setProps({ expandedKeys: [1, 2] }).then(() => {
         expect(onLoad).toHaveBeenCalled()
       })
     }, 0)

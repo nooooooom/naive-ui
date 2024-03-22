@@ -1,10 +1,10 @@
-import { VueWrapper } from '@vue/test-utils/dist/vueWrapper'
+import type { VueWrapper } from '@vue/test-utils/dist/vueWrapper'
 import { mount } from '@vue/test-utils'
-import { ComponentPublicInstance, h, nextTick, VNodeChild } from 'vue'
+import { type ComponentPublicInstance, h, nextTick, type VNodeChild } from 'vue'
 import { NIcon } from '../../icon'
-import { DropdownMixedOption } from '../src/interface'
+import type { DropdownMixedOption } from '../src/interface'
 import { CashOutline as CashIcon } from '@vicons/ionicons5'
-import { NDropdown, DropdownProps } from '../index'
+import { NDropdown, type DropdownProps } from '../index'
 
 const pendingOptionClassName =
   'n-dropdown-option-body n-dropdown-option-body--pending'
@@ -198,7 +198,7 @@ describe('n-dropdown', () => {
       expect(options[1].className).not.toEqual(pendingOptionClassName)
       expect(options[3].className).toEqual(pendingOptionClassName)
     })
-    await (options[3] as HTMLDivElement).click()
+    ;(options[3] as HTMLDivElement).click()
     expect(onSelect).not.toHaveBeenCalledWith()
 
     const mouseLeave = new Event('mouseleave')
@@ -222,13 +222,14 @@ describe('n-dropdown', () => {
     expect(triggerNodeWrapper.exists()).toBe(true)
     await triggerNodeWrapper.trigger('click')
 
+    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
     const disabledMenu = document.querySelector(
       '.n-dropdown-option-body--disabled'
     ) as HTMLDivElement
 
     expect(disabledMenu).not.toEqual(null)
 
-    await disabledMenu.click()
+    disabledMenu.click()
 
     expect(onSelect).not.toHaveBeenCalledWith()
 
@@ -265,7 +266,7 @@ describe('n-dropdown', () => {
         { default: () => option.label }
       )
     }
-    const wrapper = await mountDropdown({
+    const wrapper = mountDropdown({
       renderLabel: renderDropdownLabel
     })
     const triggerNodeWrapper = wrapper.find('span')
@@ -283,7 +284,7 @@ describe('n-dropdown', () => {
         default: () => h(CashIcon)
       })
     }
-    const wrapper = await mountDropdown({
+    const wrapper = mountDropdown({
       renderIcon: renderDropdownIcon
     })
     const triggerNodeWrapper = wrapper.find('span')
@@ -296,7 +297,6 @@ describe('n-dropdown', () => {
   })
 
   it('should accept empty object in type-checking phase', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dropdown = <NDropdown options={[{}]} />
+    ;<NDropdown options={[{}]} />
   })
 })
