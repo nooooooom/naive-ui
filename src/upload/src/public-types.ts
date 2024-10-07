@@ -4,7 +4,7 @@ export type { UploadProps } from './Upload'
 
 export interface UploadInst {
   openOpenFileDialog: () => void
-  submit: () => void
+  submit: (fileId?: string) => void
   clear: () => void
 }
 
@@ -46,7 +46,6 @@ export type UploadOnFinish = ({
 }: {
   file: UploadSettledFileInfo
   event?: ProgressEvent
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 }) => UploadFileInfo | undefined | void
 
 export type UploadOnRemove = (data: {

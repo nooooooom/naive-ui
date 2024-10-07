@@ -122,13 +122,13 @@ override-click-behavior.vue
 ```ts
 interface ScrollTo {
   (x: number, y: number): void
-  (options: { left?: number; top?: number; debounce?: boolean }): void
-  (options: { index: number; debounce?: boolean }): void
-  (options: { key: string | number; debounce?: boolean }): void
-  (options: { position: 'top' | 'bottom'; debounce?: boolean }): void
+  (options: { left?: number, top?: number, debounce?: boolean }): void
+  (options: { index: number, debounce?: boolean }): void
+  (options: { key: string | number, debounce?: boolean }): void
+  (options: { position: 'top' | 'bottom', debounce?: boolean }): void
 }
 ```
 
 ### Others
 
-1. `treeGetClickTarget: (e: MouseEvent) => ('checkbox' | 'switcher' | 'node')`: Get click target of a node click event. It can be used in `nodeProps.onClick`.
+1. `treeGetClickTarget: (e: MouseEvent) => ('checkbox' | 'switcher' | 'node')`: Get click target of a node click event. It can be used in `nodeProps.onClick`. You can import it from `naive-ui` package directly.

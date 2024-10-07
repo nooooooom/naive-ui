@@ -1,18 +1,18 @@
 import {
+  type ImgHTMLAttributes,
+  type PropType,
   defineComponent,
   h,
   inject,
-  ref,
-  type PropType,
-  watchEffect,
-  type ImgHTMLAttributes,
-  onMounted,
   onBeforeUnmount,
+  onMounted,
   provide,
-  toRef
+  ref,
+  toRef,
+  watchEffect
 } from 'vue'
 import { isImageSupportNativeLazy } from '../../_utils/env/is-native-lazy-load'
-import type { ExtractPublicPropTypes } from '../../_utils'
+import { type ExtractPublicPropTypes, resolveSlot } from '../../_utils'
 import { useConfig } from '../../_mixins'
 import { imageContextKey, imagePreviewSharedProps } from './interface'
 import { observeIntersection } from './utils'
@@ -34,7 +34,7 @@ export const imageProps = {
   intersectionObserverOptions: Object as PropType<IntersectionObserverOptions>,
   objectFit: {
     type: String as PropType<
-    'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
+      'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
     >,
     default: 'fill'
   },
@@ -55,7 +55,7 @@ export default defineComponent({
   name: 'Image',
   props: imageProps,
   inheritAttrs: false,
-  setup (props) {
+  setup(props) {
     const imageRef = ref<HTMLImageElement | null>(null)
     const showErrorRef = ref(false)
     const previewInstRef = ref<ImagePreviewInst | null>(null)
@@ -63,7 +63,8 @@ export default defineComponent({
     const { mergedClsPrefixRef } = imageGroupHandle || useConfig(props)
     const exposedMethods = {
       click: () => {
-        if (props.previewDisabled || showErrorRef.value) return
+        if (props.previewDisabled || showErrorRef.value)
+          return
         const mergedPreviewSrc = props.previewSrc || props.src
         if (imageGroupHandle) {
           imageGroupHandle.setPreviewSrc(mergedPreviewSrc)
@@ -72,7 +73,8 @@ export default defineComponent({
           return
         }
         const { value: previewInst } = previewInstRef
-        if (!previewInst) return
+        if (!previewInst)
+          return
         previewInst.setPreviewSrc(mergedPreviewSrc)
         previewInst.setThumbnailEl(imageRef.value)
         previewInst.toggleShow()
@@ -132,7 +134,8 @@ export default defineComponent({
         props.imgProps?.onClick?.(e)
       },
       mergedOnError: (e: Event) => {
-        if (!shouldStartLoadingRef.value) return
+        if (!shouldStartLoadingRef.value)
+          return
         showErrorRef.value = true
         const { onError, imgProps: { onError: imgPropsOnError } = {} } = props
         onError?.(e)
@@ -147,44 +150,49 @@ export default defineComponent({
       ...exposedMethods
     }
   },
-  render () {
+  render() {
     const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this
-
+    const errorNode = resolveSlot(this.$slots.error, () => [])
     const placeholderNode = this.$slots.placeholder?.()
     const loadSrc = this.src || imgProps.src
 
-    const imgNode = h('img', {
-      ...imgProps,
-      ref: 'imageRef',
-      width: this.width || imgProps.width,
-      height: this.height || imgProps.height,
-      src: this.showError
-        ? this.fallbackSrc
-        : lazy && this.intersectionObserverOptions
-          ? this.shouldStartLoading
-            ? loadSrc
-            : undefined
-          : loadSrc,
-      alt: this.alt || imgProps.alt,
-      'aria-label': this.alt || imgProps.alt,
-      onClick: this.mergedOnClick,
-      onError: this.mergedOnError,
-      onLoad: this.mergedOnLoad,
-      // If interseciton observer options is set, do not use native lazy
-      loading:
-        isImageSupportNativeLazy && lazy && !this.intersectionObserverOptions
-          ? 'lazy'
-          : 'eager',
-      style: [
-        imgProps.style || '',
-        placeholderNode && !loaded
-          ? { height: '0', width: '0', visibility: 'hidden' }
-          : '',
-        { objectFit: this.objectFit }
-      ],
-      'data-error': this.showError,
-      'data-preview-src': this.previewSrc || this.src
-    })
+    const imgNode
+      = this.showError && errorNode.length
+        ? errorNode
+        : h('img', {
+          ...imgProps,
+          ref: 'imageRef',
+          width: this.width || imgProps.width,
+          height: this.height || imgProps.height,
+          src: this.showError
+            ? this.fallbackSrc
+            : lazy && this.intersectionObserverOptions
+              ? this.shouldStartLoading
+                ? loadSrc
+                : undefined
+              : loadSrc,
+          alt: this.alt || imgProps.alt,
+          'aria-label': this.alt || imgProps.alt,
+          onClick: this.mergedOnClick,
+          onError: this.mergedOnError,
+          onLoad: this.mergedOnLoad,
+          // If interseciton observer options is set, do not use native lazy
+          loading:
+              isImageSupportNativeLazy
+              && lazy
+              && !this.intersectionObserverOptions
+                ? 'lazy'
+                : 'eager',
+          style: [
+            imgProps.style || '',
+            placeholderNode && !loaded
+              ? { height: '0', width: '0', visibility: 'hidden' }
+              : '',
+            { objectFit: this.objectFit }
+          ],
+          'data-error': this.showError,
+          'data-preview-src': this.previewSrc || this.src
+        })
     return (
       <div
         {...$attrs}
@@ -192,8 +200,8 @@ export default defineComponent({
         class={[
           $attrs.class,
           `${mergedClsPrefix}-image`,
-          (this.previewDisabled || this.showError) &&
-            `${mergedClsPrefix}-image--preview-disabled`
+          (this.previewDisabled || this.showError)
+          && `${mergedClsPrefix}-image--preview-disabled`
         ]}
       >
         {this.groupId ? (

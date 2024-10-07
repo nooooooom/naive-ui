@@ -40,6 +40,7 @@ panel.vue
 | Name | Type | Default | Description | Version |
 | --- | --- | --- | --- | --- |
 | clearable | `boolean` | `false` | Whether the date picker is clearable. |  |
+| date-format | `string` | `undefined` | Date input format inside popup panel. | NEXT_VERSION |
 | default-value | `number \| [number, number] \| null` | `undefined` | Date picker's default value. |  |
 | default-formatted-value | `string \| [string, string] \| null` | `undefined` | Date picker's default formatted value. | 2.24.0 |
 | disabled | `boolean` | `false` | Whether the date picker is disabled. |  |
@@ -59,6 +60,7 @@ panel.vue
 | value | `number \| [number, number] \| null` | `undefined` | Value of the date picker when being manually set. |  |
 | value-format | `string` | Follow `format` prop | Format of the binding value. See [format](https://date-fns.org/v2.23.0/docs/format). | 2.24.0 |
 | year-format | `string` | `'y'` | Format of year item in the panel. See [format](https://date-fns.org/v2.23.0/docs/format). | 2.37.0 |
+| year-range | `[number, number]` | `[1901, 2100]` | Year range in month picker in panel. | 2.40.0 |
 | on-clear | `() => void` | `undefined` | On clear callback. | 2.28.3 |
 | on-confirm | `(value: number \| [number, number] \| null, formattedValue: string \| [string, string] \| null) => void` | `undefined` | On confirm callback. | 2.28.3 |
 | on-blur | `() => void` | `undefined` | On blur callback. |  |
@@ -178,7 +180,7 @@ panel.vue
 | --- | --- | --- | --- | --- |
 | actions | `Array<'clear' \| 'now'> \| null` | `['clear', 'now']` | Operations supported for the `week` type date picker. | 2.37.0 |
 | default-calendar-start-time | `number` | `undefined` | Default panel calendar start month timestamp. | 2.38.1 |
-| format | `string` | `'yyyy-w'` for en-US, Locale specific. | Format of the input. For detail please see [format](https://date-fns.org/v2.23.0/docs/format). | 2.37.0 |
+| format | `string` | `'YYYY-w'` for en-US, Locale specific. | Format of the input. For detail please see [format](https://date-fns.org/v2.23.0/docs/format). | 2.37.0 |
 | placeholder | `string` | `'Select Week'` for en-US, Locale specific. | Placeholder. | 2.37.0 |
 | on-update:formatted-value | `(value: string \| null, timestampValue: number \| null) => void` | `undefined` | Formatted value changed callback. | 2.37.0 |
 | on-update:value | `(value: number \| null, formattedValue: string \| null) => void` | `undefined` | Value changed callback. | 2.37.0 |
@@ -194,6 +196,28 @@ panel.vue
 | prev-month | `()`       | Prev icon of the date panel.      | 2.33.4  |
 | prev-year  | `()`       | Fast prev icon of the date panel. | 2.33.4  |
 | separator  | `()`       | Separator of range picker.        | 2.29.0  |
+
+### Date, Year, QuarterRange, Week Slots
+
+| 名称 | 参数 | 说明 | 版本 |
+| --- | --- | --- | --- |
+| clear | `(props: { onClear: () => void, text: string })` | Clear button of the panel. | 2.40.0 |
+| now | `(props: { onNow: () => void, text: string })` | Now button of the panel. | 2.40.0 |
+
+### DateRange, DateTimeRange, MonthRange, YearRange Slots
+
+| 名称 | 参数 | 说明 | 版本 |
+| --- | --- | --- | --- |
+| clear | `(props: { onClear: () => void, text: string })` | Clear button of the panel. | 2.40.0 |
+| confirm | `(props: { onConfirm: () => void, disabled: boolean, text: string })` | Confirm button of the panel. | 2.40.0 |
+
+### DateTime, Month, Quarter Slots
+
+| 名称 | 参数 | 说明 | 版本 |
+| --- | --- | --- | --- |
+| now | `(props: { onNow: () => void, text: string })` | Now button of the panel. | 2.40.0 |
+| clear | `(props: { onClear: () => void, text: string })` | Clear button of the panel. | 2.40.0 |
+| confirm | `(props: { onConfirm: () => void, disabled: boolean, text: string })` | Confirm button of the panel. | 2.40.0 |
 
 ### DatePicker Methods
 

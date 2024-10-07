@@ -88,6 +88,7 @@ debug.vue
 
 | Name   | Parameters | Description                            | Version |
 | ------ | ---------- | -------------------------------------- | ------- |
+| header | `()`       | Header menu slot.                      | 2.40.0  |
 | action | `()`       | Options menu slot.                     | 2.22.0  |
 | arrow  | `()`       | Arrow icon of trigger.                 | 2.30.4  |
 | empty  | `()`       | Empty state slot for the options menu. | 2.22.0  |

@@ -10,7 +10,7 @@ const internalSelectionDark: InternalSelectionTheme = {
   peers: {
     Popover: popoverDark
   },
-  self (vars) {
+  self(vars) {
     const {
       borderRadius,
       textColor2,
@@ -37,10 +37,12 @@ const internalSelectionDark: InternalSelectionTheme = {
       heightTiny,
       heightSmall,
       heightMedium,
-      heightLarge
+      heightLarge,
+      fontWeight
     } = vars
     return {
       ...commonVars,
+      fontWeight,
       fontSizeTiny,
       fontSizeSmall,
       fontSizeMedium,

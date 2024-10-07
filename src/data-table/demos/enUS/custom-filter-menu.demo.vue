@@ -4,38 +4,27 @@
 You can customize filter & filter menu & sorter & expand icon.
 </markdown>
 
-<template>
-  <n-data-table
-    :columns="cols"
-    :data="data"
-    :render-expand-icon="renderExpandIcon"
-  />
-</template>
-
 <script lang="ts">
 import { defineComponent, h, reactive } from 'vue'
-import {
-  NButton,
-  NSpace,
-  NIcon,
-  DataTableColumns,
-  DataTableBaseColumn
-} from 'naive-ui'
-import { SearchOutline, PawOutline } from '@vicons/ionicons5'
+import type { DataTableBaseColumn, DataTableColumns } from 'naive-ui'
+import { NButton, NIcon, NSpace } from 'naive-ui'
+import { PawOutline, SearchOutline } from '@vicons/ionicons5'
 
 const data = [
   {
     Left: '1',
-    Right: '1'
+    Right: '1',
+    key: 1
   },
   {
     Left: '2',
-    Right: '2'
+    Right: '2',
+    key: 2
   }
 ]
 
 export default defineComponent({
-  setup () {
+  setup() {
     const renderExpandIcon = () => {
       return h(NIcon, null, { default: () => h(PawOutline) })
     }
@@ -99,9 +88,12 @@ export default defineComponent({
         sorter: 'default',
         renderSorterIcon: ({ order }) => {
           const style = 'transform: translateY(-3px);'
-          if (order === false) return h('div', { style }, ['🤔'])
-          if (order === 'ascend') return h('div', { style }, ['👇'])
-          if (order === 'descend') return h('div', { style }, ['👆'])
+          if (order === false)
+            return h('div', { style }, ['🤔'])
+          if (order === 'ascend')
+            return h('div', { style }, ['👇'])
+          if (order === 'descend')
+            return h('div', { style }, ['👆'])
         }
       },
       filterColumn
@@ -115,3 +107,11 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <n-data-table
+    :columns="cols"
+    :data="data"
+    :render-expand-icon="renderExpandIcon"
+  />
+</template>

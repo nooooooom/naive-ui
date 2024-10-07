@@ -1,4 +1,4 @@
-import { cB, c } from '../../../_utils/cssr'
+import { c, cB } from '../../../_utils/cssr'
 import { fadeInScaleUpTransition } from '../../../_styles/transitions/fade-in-scale-up.cssr'
 
 // --n-menu-box-shadow
@@ -8,6 +8,7 @@ export default c([
     outline: none;
     width: 100%;
     position: relative;
+    font-weight: var(--n-font-weight);
   `),
   cB('select-menu', `
     margin: 4px 0;

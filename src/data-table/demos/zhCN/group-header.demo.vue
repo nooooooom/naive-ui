@@ -1,20 +1,13 @@
 <markdown>
 # 表头分组
-</markdown>
 
-<template>
-  <n-data-table
-    :data="data"
-    :columns="columns"
-    :single-line="false"
-    :pagination="pagination"
-  />
-</template>
+注意：如果你希望分组的表头拥有固定列的效果，你需要给所有固定列表头都设定好宽度，包括所有的父级节点，否则可能产生错位。
+</markdown>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 
-function createCols () {
+function createCols() {
   return [
     {
       title: 'Name',
@@ -51,7 +44,7 @@ function createCols () {
   ]
 }
 
-function createData () {
+function createData() {
   return Array.from({ length: 50 }).map((_, i) => {
     return {
       key: i,
@@ -65,7 +58,7 @@ function createData () {
 }
 
 export default defineComponent({
-  setup () {
+  setup() {
     return {
       data: ref(createData()),
       columns: ref(createCols()),
@@ -76,3 +69,12 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <n-data-table
+    :data="data"
+    :columns="columns"
+    :single-line="false"
+    :pagination="pagination"
+  />
+</template>
